@@ -1,57 +1,83 @@
 #!/bin/bash
 
+# Function to check if MariaDB is installed
+is_installed() {
+  dpkg-query -l mariadb-server >/dev/null 2>&1
+  return $?
+}
+
 # Update package lists
 sudo apt update
 
-# Install MariaDB server
-sudo apt install mariadb-server -y
+# Check if MariaDB is already installed
+if is_installed; then
+  echo "MariaDB is already installed."
+  echo "Do you want to manage existing users (y/N): "
+  read -r manage_users
+  if [[ "$manage_users" =~ ^[Yy]$ ]]; then
+    # Manage existing users
+    manage_existing_users
+  else
+    exit 0
+  fi
+else
+  # Install MariaDB
+  echo "Installing MariaDB..."
+  sudo apt install mariadb-server -y
 
-# Prompt user for desired root password
-read -s -p "Enter a strong password for the root user: " root_password
+  # Start MariaDB service
+  sudo systemctl start mariadb
+  echo "Do you want to enable mariadb on boot (y/N): "
+  read -r enabled
+  if [[ "$enabled" =~ ^[Yy]$ ]]; then
+    # Enable MariaDB to start automatically at boot
+    sudo systemctl enable mariadb
+fi
 
-# Validate root password strength using a complexity check (optional but recommended)
-# You can implement a complexity check using tools like 'pwquality' or regular expressions
-# if [[ ! "$(pwquality <<< "$root_password")" =~ ^[a-zA-Z0-9!@#$%^&*()\-_+={}|;':",<.>/?]+$ ]] ; then
-#   echo "Error: Root password must contain a mix of uppercase, lowercase, numbers, and special characters."
-#   exit 1
-# fi
+# Set default root password
+echo "Enter the desired default root password for MariaDB:"
+read -sr root_password
 
-# Secure MariaDB installation using `mysql_secure_installation`
-sudo mysql_secure_installation <<EOF
+# Secure MariaDB installation
+sudo mysql_secure_installation << EOF
 Y
+$root_password
 $root_password
 Y
 Y
 Y
 EOF
 
-# Function to create a MariaDB user with password
-create_user_with_password() {
-  local username="$1"
-  local password="$2"
+# Function to manage existing users
+manage_existing_users() {
+  echo "Enter the number of users you want to create (0 to skip):"
+  read -r num_users
 
-  # Validate username
-  if [[ "$username" == "root" ]]; then
-    echo "Error: Username cannot be 'root'."
-    return 1
-  fi
+  for (( i=1; i<=$num_users; i++ )); do
+    echo "Enter username for user $i:"
+    read -r username
 
-  # Create user with encrypted password
-  sudo mysql -u root -p"$root_password" -e "CREATE USER '$username'@'localhost' IDENTIFIED BY PASSWORD '*'"
-  sudo mysql -u root -p"$root_password" -e "GRANT ALL PRIVILEGES ON *.* TO '$username'@'localhost' WITH GRANT OPTION"
+    # Check if user already exists
+    if mysql -u root -p$root_password -e "SELECT * FROM mysql.user WHERE User='$username'" >/dev/null 2>&1; then
+      echo "User '$username' already exists."
+      echo "Do you want to modify the password (y/N)?"
+      read -r modify_password
+      if [[ "$modify_password" =~ ^[Yy]$ ]]; then
+        set_user_password $username
+      fi
+    else
+      set_user_password $username
+    fi
+  done
+}
+
+# Function to set user password
+set_user_password() {
+  local username=$1
+  echo "Enter a password for user '$username':"
+  read -sr user_password
+  echo "GRANT ALL PRIVILEGES ON *.* TO '$username'@'%' IDENTIFIED BY '$user_password' WITH GRANT OPTION; FLUSH PRIVILEGES;" | mysql -u root -p$root_password
   echo "User '$username' created successfully."
 }
 
-# Get number of user accounts to create
-read -p "Enter the number of user accounts you want to create: " num_users
-
-# Loop to create users based on input
-for (( i=1; i<=$num_users; i++ )); do
-  read -p "Enter username for user $i: " username
-  read -s -p "Enter password for user $i: " user_password
-
-  create_user_with_password "$username" "$user_password" || exit 1
-done
-
-echo "MariaDB installation complete!"
-
+echo "MariaDB installation complete."
