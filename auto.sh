@@ -35,19 +35,17 @@ else
   if [[ "$enabled" =~ ^[Yy]$ ]]; then
     sudo systemctl enable mariadb
   fi
-
-  # Secure MariaDB installation (only if newly installed)
-  sudo mysql_secure_installation << EOF
-  Y
-  $root_password
-  $root_password
-  Y
-  Y
-  Y
-  EOF
-
   echo "MariaDB installation complete."  # Exit after installation (recommended)
 fi
+
+sudo mysql_secure_installation << EOF
+Y
+$root_password
+$root_password
+Y
+Y
+Y
+EOF  
 
 # Function to manage existing users (unchanged)
 manage_existing_users() {
