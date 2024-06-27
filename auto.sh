@@ -25,8 +25,24 @@ EOF
 # Check if MariaDB is already installed
 if is_installed; then
   echo "MariaDB is already installed."
-  echo "Do you want to manage existing users (y/N): "
-  read -r manage_users
+
+  # Check for existing users
+  echo "Checking for existing users..."
+  user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
+
+  if [[ $? -eq 0 ]]; then
+    if [[ $user_count -eq 0 ]]; then
+      echo "No users found. Proceed with creating new users?" (y/N)
+      read -r manage_users
+    else
+      echo "$user_count users found. Do you want to manage them (y/N): "
+      read -r manage_users
+    fi
+  else
+    echo "Error checking for users."
+    exit 1
+  fi
+
   if [[ "$manage_users" =~ ^[Yy]$ ]]; then
     # Manage existing users
     manage_existing_users
