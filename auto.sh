@@ -34,6 +34,7 @@ else
   if [[ "$enabled" =~ ^[Yy]$ ]]; then  # Add the closing parenthesis here
     # Enable MariaDB to start automatically at boot
     sudo systemctl enable mariadb
+
 fi
 
 
@@ -79,8 +80,19 @@ set_user_password() {
   local username=$1
   echo "Enter a password for user '$username':"
   read -sr user_password
-  echo "GRANT ALL PRIVILEGES ON *.* TO '$username'@'%' IDENTIFIED BY '$user_password' WITH GRANT OPTION; FLUSH PRIVILEGES;" | mysql -u root -p$root_password
-  echo "User '$username' created successfully."
+
+  # Create user with specific privileges (adjust as needed)
+  local sql="GRANT CREATE, SELECT, INSERT, UPDATE, DELETE ON *.* TO '$username'@'%' IDENTIFIED BY '$user_password'; FLUSH PRIVILEGES;"
+
+  # Execute the SQL statement and capture the output
+  local result=$(mysql -u root -p$root_password -e "$sql" 2>&1)
+
+  if [[ $? -eq 0 ]]; then
+    echo "User '$username' created successfully."
+  else
+    echo "Error creating user '$username':"
+    echo "$result"  # Print the error message from mysql
+  fi
 }
 
 echo "MariaDB installation complete."
