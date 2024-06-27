@@ -9,10 +9,11 @@ is_installed() {
 # Update package lists
 sudo apt update
 
-# Set default root password (prompt before installation check)
+# Only attempt to modify terminal settings if interactive
+[[ $- == *i* ]] && stty -echo  # Silence password echo (if interactive)
+
 echo "Enter the desired default root password for MariaDB:"
 read -sr root_password
-
 
 echo $root_password | sudo mysql_secure_installation << EOF
 Y
@@ -23,34 +24,42 @@ Y
 Y
 EOF
 
+# Restore terminal settings if modified
+[[ $- == *i* ]] && stty echo  # Restore echo (if interactive)
 
 # Check if MariaDB is already installed
 if is_installed; then
-  echo "MariaDB is already installed."
+  echo "MariaDB is already installed. Do you want to reinstall again (y/N): "
+  read -s reinstall
 
-  # Check for existing users
-  echo "Checking for existing users..."
-  user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
+  if [[ "$reinstall" =~ ^[Yy]$ ]]; then
+    sudo apt install mariadb-server -y
+    echo "MariaDB Installtion Complete"
+  fi 
+  # Check for existing users (Optional)
+  # This section is commented out by default. Uncomment to manage users.
+  # echo "Checking for existing users..."
+  # user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
 
-  if [[ $? -eq 0 ]]; then
-    if [[ $user_count -eq 0 ]]; then
-      echo "No users found. Proceed with creating new users?" (y/N)
-      read -r manage_users
-    else
-      echo "$user_count users found. Do you want to manage them (y/N): "
-      read -r manage_users
-    fi
-  else
-    echo "Error checking for users."
-    exit 1
-  fi
+  # if [[ $? -eq 0 ]]; then
+  #   if [[ $user_count -eq 0 ]]; then
+  #     echo "No users found. Proceed with creating new users?" (y/N)
+  #     read -r manage_users
+  #   else
+  #     echo "$user_count users found. Do you want to manage them (y/N): "
+  #     read -r manage_users
+  #   fi
+  # else
+  #   echo "Error checking for users."
+  #   exit 1
+  # fi
 
-  if [[ "$manage_users" =~ ^[Yy]$ ]]; then
-    # Manage existing users
-    manage_existing_users
-  else
-    exit 0
-  fi
+  # if [[ "$manage_users" =~ ^[Yy]$ ]]; then
+  #   # Manage existing users
+  #   manage_existing_users
+  # else
+  #   exit 0
+  # fi
 else
   # Install MariaDB
   echo "Installing MariaDB..."
