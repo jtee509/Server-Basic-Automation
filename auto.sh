@@ -2,13 +2,10 @@
 
 # Function to check if MariaDB is installed
 is_installed() {
-  # Check for `mariadb-server` package existence using a more robust approach
-  if dpkg -l mariadb-server >/dev/null 2>&1; then
-    return 0  # Indicate success
-  else
-    return 1  # Indicate failure
-  fi
+  dpkg-query -l mariadb-server >/dev/null 2>&1
+  return $?
 }
+
 # Update package lists
 sudo apt update
 
@@ -34,8 +31,6 @@ else
   if [[ "$enabled" =~ ^[Yy]$ ]]; then  # Add the closing parenthesis here
     # Enable MariaDB to start automatically at boot
     sudo systemctl enable mariadb
-  else
-    continue
   fi
 fi
 
