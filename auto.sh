@@ -35,7 +35,7 @@ else
     # Enable MariaDB to start automatically at boot
     sudo systemctl enable mariadb
   else
-    exit 0
+    continue
   fi
 fi
 
