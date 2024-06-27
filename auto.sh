@@ -2,10 +2,13 @@
 
 # Function to check if MariaDB is installed
 is_installed() {
-  dpkg-query -l mariadb-server >/dev/null 2>&1
-  return $?
+  # Check for `mariadb-server` package existence using a more robust approach
+  if dpkg -l mariadb-server >/dev/null 2>&1; then
+    return 0  # Indicate success
+  else
+    return 1  # Indicate failure
+  fi
 }
-
 # Update package lists
 sudo apt update
 
@@ -25,14 +28,14 @@ else
   echo "Installing MariaDB..."
   sudo apt install mariadb-server -y
 
-  # Start MariaDB service
   sudo systemctl start mariadb
   echo "Do you want to enable mariadb on boot (y/N): "
   read -r enabled
-  if [[ "$enabled" =~ ^[Yy]$ ]]; then
+  if [[ "$enabled" =~ ^[Yy]$ ]]; then  # Add the closing parenthesis here
     # Enable MariaDB to start automatically at boot
     sudo systemctl enable mariadb
 fi
+
 
 # Set default root password
 echo "Enter the desired default root password for MariaDB:"
