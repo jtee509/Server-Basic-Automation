@@ -34,7 +34,9 @@ else
   if [[ "$enabled" =~ ^[Yy]$ ]]; then  # Add the closing parenthesis here
     # Enable MariaDB to start automatically at boot
     sudo systemctl enable mariadb
-
+  else
+    exit 0
+  fi
 fi
 
 
