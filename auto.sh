@@ -13,14 +13,16 @@ sudo apt update
 echo "Enter the desired default root password for MariaDB:"
 read -sr root_password
 
-sudo mysql_secure_installation << EOF
+
+echo $root_password | sudo mysql_secure_installation << EOF
 Y
 $root_password
 $root_password
 Y
 Y
 Y
-EOF  
+EOF
+
 
 # Check if MariaDB is already installed
 if is_installed; then
