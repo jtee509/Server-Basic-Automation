@@ -9,6 +9,10 @@ is_installed() {
 # Update package lists
 sudo apt update
 
+# Set default root password (prompt before installation check)
+echo "Enter the desired default root password for MariaDB:"
+read -sr root_password
+
 # Check if MariaDB is already installed
 if is_installed; then
   echo "MariaDB is already installed."
@@ -28,28 +32,24 @@ else
   sudo systemctl start mariadb
   echo "Do you want to enable mariadb on boot (y/N): "
   read -r enabled
-  if [[ "$enabled" =~ ^[Yy]$ ]]; then  # Add the closing parenthesis here
-    # Enable MariaDB to start automatically at boot
+  if [[ "$enabled" =~ ^[Yy]$ ]]; then
     sudo systemctl enable mariadb
   fi
+
+  # Secure MariaDB installation (only if newly installed)
+  sudo mysql_secure_installation << EOF
+  Y
+  $root_password
+  $root_password
+  Y
+  Y
+  Y
+  EOF
+
+  echo "MariaDB installation complete."  # Exit after installation (recommended)
 fi
 
-
-# Set default root password
-echo "Enter the desired default root password for MariaDB:"
-read -sr root_password
-
-# Secure MariaDB installation
-sudo mysql_secure_installation << EOF
-Y
-$root_password
-$root_password
-Y
-Y
-Y
-EOF
-
-# Function to manage existing users
+# Function to manage existing users (unchanged)
 manage_existing_users() {
   echo "Enter the number of users you want to create (0 to skip):"
   read -r num_users
@@ -72,13 +72,26 @@ manage_existing_users() {
   done
 }
 
-# Function to set user password
+# Function to set user password (with improved error handling)
 set_user_password() {
   local username=$1
   echo "Enter a password for user '$username':"
   read -sr user_password
-  echo "GRANT ALL PRIVILEGES ON *.* TO '$username'@'%' IDENTIFIED BY '$user_password' WITH GRANT OPTION; FLUSH PRIVILEGES;" | mysql -u root -p$root_password
-  echo "User '$username' created successfully."
+
+  # Create user with specific privileges (adjust as needed)
+  local sql="GRANT CREATE, SELECT, INSERT, UPDATE, DELETE ON *.* TO '$username'@'%' IDENTIFIED BY '$user_password'; FLUSH PRIVILEGES;"
+
+  # Execute the SQL statement and capture the output
+  local result=$(mysql -u root -p$root_password -e "$sql" 2>&1)
+
+  if [[ $? -eq 0 ]]; then
+    echo "User '$username' created successfully."
+  else
+    echo "Error creating user '$username':"
+    echo "$result"  # Print the error message from mysql
+  fi
 }
 
-echo "MariaDB installation complete."
+# This script stores the root password in plain text. Consider using
+# environment variables or a password manager for improved security,
+# especially in production environments.
