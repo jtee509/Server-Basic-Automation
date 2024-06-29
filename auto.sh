@@ -59,19 +59,19 @@ manage_existing_users() {
 }
 
 
-# Function to check if MariaDB is installed
 is_installed() {
+  # Check if mariadb-server is installed
   dpkg-query -l mariadb-server >/dev/null 2>&1
   return $?
 }
 
 
-#function to install mariadb
-mariadbinstall(){
+# Function to install MariaDB
+mariadbinstall() {
   # Check if MariaDB is already installed
   if is_installed; then
-  echo "MariaDB is already installed. Do you want to install it again? (y/N): "
-  read -r reinstall
+    echo "MariaDB is already installed. Do you want to install it again? (y/N): "
+    read -r reinstall
     if [[ "$reinstall" =~ ^[Yy]$ ]]; then
       sudo apt-get remove mariadb
       # Install MariaDB
@@ -84,8 +84,9 @@ mariadbinstall(){
       if [[ "$enabled" =~ ^[Yy]$ ]]; then
         sudo systemctl enable mariadb  
       fi
+    fi
   else
-      # Install MariaDB
+    # Install MariaDB
     echo "Installing MariaDB..."
     sudo apt install mariadb-server -y
 
