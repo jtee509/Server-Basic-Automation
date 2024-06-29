@@ -16,10 +16,9 @@ main(){
     # Check for existing users
     echo "Checking for existing users..."
     echo "Please use the MariaDB ROOT password"
-    user_count=$(mysql -u root -p $root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
-    user_list=$(mysql -u root -p $root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
+    user_count=$(mysql -u root -p "$root_password" -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
+    user_list=$(mysql -u root -p "$root_password" -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
 
-    echo "These are the list of users: \n $user_list"    
 
 
     if [[ $? -eq 0 ]]; then
@@ -27,6 +26,7 @@ main(){
         echo "No users found. Proceed with creating new users? (y/N)"
         read -r manage_users
       else
+        echo "These are the list of users: \n $user_list"    
         echo "$user_count users found. Do you want to manage them (y/N): "
         read -r manage_users
       fi
