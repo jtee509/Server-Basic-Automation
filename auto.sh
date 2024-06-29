@@ -28,8 +28,10 @@ main(){
 
     if [[ $? -eq 0 ]]; then
       echo "These are the list of users: 
-      $user_list"    
-      echo "user_count users found. Do you want to manage them (y/N): "
+$user_list"    
+      echo "
+      
+$user_count users found. Do you want to manage them (y/N): "
       read -r manage_users
     else
       echo "Error checking for users."
@@ -38,21 +40,23 @@ main(){
     
     if [[ "$manage_users" =~ ^[Yy]$ ]]; then
       # Manage existing users
-      manage_existing_users
+      managing_users
     else
       exit 0
     fi
 }
 
 # Function to manage existing users (unchanged)
-manage_existing_users() {
-  echo "Enter the number of users you want to create (0 to skip):"
-  read -r num_users
+managing_users() {
+  for (( i=1; i<= 0 ; i-- )); do
+    echo "To MODIFY the user please write the username (CASE SENSITIVE)"
+    echo "To CREATE the user please write the username (CASE SENSITIVE)"
+    echo "Enter username here (enter 0 to quit):"
+    read -r $username
 
-  for (( i=1; i<=$num_users; i++ )); do
-    echo "Enter username for user $i:"
-    read -r username
-
+    if [[ $username -eq 0 ]]; then
+      break
+    fi
     # Check if user already exists
     if mysql -u root -p$root_password -e "SELECT * FROM mysql.user WHERE User='$username'" >/dev/null 2>&1; then
       echo "User '$username' already exists."
@@ -131,9 +135,6 @@ set_user_password() {
 
 
 main "$@"; 
-
-# Restore terminal settings if modified
-[[ $- == *i* ]] && stty echo  # Restore echo (if interactive)
 
 exit
 
