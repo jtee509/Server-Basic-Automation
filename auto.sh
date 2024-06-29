@@ -15,7 +15,7 @@ sudo apt update
 echo "Enter the desired default root password for MariaDB:"
 read -sr root_password
 
-echo $root_password | sudo mysql_secure_installation << EOF
+echo $root_password | sudo mariadb_secure_installation << EOF
 Y
 $root_password
 $root_password
@@ -38,7 +38,7 @@ if is_installed; then
 
   if [[ $? -eq 0 ]]; then
     if [[ $user_count -eq 0 ]]; then
-      echo "No users found. Proceed with creating new users?" (y/N)
+      echo "No users found. Proceed with creating new users? (y/N)"
       read -r manage_users
     else
       echo "$user_count users found. Do you want to manage them (y/N): "
