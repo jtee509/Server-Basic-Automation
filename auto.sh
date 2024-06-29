@@ -1,79 +1,39 @@
 #!/bin/bash
 
-# Function to check if MariaDB is installed
-is_installed() {
-  dpkg-query -l mariadb-server >/dev/null 2>&1
-  return $?
+main(){
+    # Update package lists
+    sudo apt update
+    
+    mariadbinstall
+    
+    echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
+    read -sr root_password
+    mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+    
+    # Check for existing users
+    echo "Checking for existing users..."
+    user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
+      if [[ $user_count -eq 0 ]]; then
+        echo "No users found. Proceed with creating new users? (y/N)"
+        read -r manage_users
+      else
+        echo "$user_count users found. Do you want to manage them (y/N): "
+        read -r manage_users
+      fi
+    else
+      echo "Error checking for users."
+      exit 1
+    fi
+    
+    if [[ "$manage_users" =~ ^[Yy]$ ]]; then
+      # Manage existing users
+      manage_existing_users
+    else
+      exit 0
+    fi
 }
-
-# Update package lists
-sudo apt update
-
-## Try connecting with an empty password
-#if mysql -u root >/dev/null 2>&1; then
-#  echo "WARNING: MariaDB root user seems to be accessible without a password."
-#  echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
-#  read -sr root_password
-#else
-#  echo "MariaDB root user has already a password for access."
-#  echo "Do you want to reset the password (y/N) :"
-#  read -r password
-#  if [[ "$password" =~ ^[Yy]$ ]]; then
-#    echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
-#    read -sr root_password1
-#    mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password1');"
-#  fi
-#fi
-
-## Only attempt to modify terminal settings if interactive
-#[[ $- == *i* ]] && stty -echo  # Silence password echo (if interactive)
-#
-#
-#
-#echo $root_password | sudo mariadb_secure_installation << EOF
-#Y
-#$root_password
-#$root_password
-#Y
-#Y
-#Y
-#EOF
-#
-## Restore terminal settings if modified
-#[[ $- == *i* ]] && stty echo  # Restore echo (if interactive)
-
-
-# Check if MariaDB is already installed
-
-
-
-echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
-read -sr root_password
-mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
-
-# Check for existing users
-echo "Checking for existing users..."
-user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
-
-if [[ $? -eq 0 ]]; then
-  if [[ $user_count -eq 0 ]]; then
-    echo "No users found. Proceed with creating new users? (y/N)"
-    read -r manage_users
-  else
-    echo "$user_count users found. Do you want to manage them (y/N): "
-    read -r manage_users
-  fi
-else
-  echo "Error checking for users."
-  exit 1
-fi
-
-if [[ "$manage_users" =~ ^[Yy]$ ]]; then
-  # Manage existing users
-  manage_existing_users
-else
-  exit 0
-fi
 
 # Function to manage existing users (unchanged)
 manage_existing_users() {
@@ -98,8 +58,17 @@ manage_existing_users() {
   done
 }
 
+
+# Function to check if MariaDB is installed
+is_installed() {
+  dpkg-query -l mariadb-server >/dev/null 2>&1
+  return $?
+}
+
+
 #function to install mariadb
 mariadbinstall(){
+  # Check if MariaDB is already installed
   if is_installed; then
   echo "MariaDB is already installed. Do you want to install it again? (y/N): "
   read -r reinstall
@@ -108,7 +77,7 @@ mariadbinstall(){
       # Install MariaDB
       echo "Installing MariaDB..."
       sudo apt install mariadb-server -y
-  
+
       sudo systemctl start mariadb
       echo "Do you want to enable mariadb on boot (y/N): "
       read -r enabled
@@ -129,6 +98,7 @@ mariadbinstall(){
   fi
 }
 
+
 # Function to set user password (with improved error handling)
 set_user_password() {
   local username=$1
@@ -148,6 +118,10 @@ set_user_password() {
     echo "$result"  # Print the error message from mysql
   fi
 }
+
+
+main "$@"; exit
+
 
 # This script stores the root password in plain text. Consider using
 # environment variables or a password manager for improved security,
