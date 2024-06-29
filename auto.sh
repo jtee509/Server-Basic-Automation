@@ -30,7 +30,6 @@ main(){
       echo "These are the list of users: 
 $user_list"    
       echo "
-      
 $user_count users found. Do you want to manage them (y/N): "
       read -r manage_users
     else
@@ -48,11 +47,11 @@ $user_count users found. Do you want to manage them (y/N): "
 
 # Function to manage existing users (unchanged)
 managing_users() {
-  for (( i=1; i<= 0 ; i-- )); do
+  for (( i=1; i!=0 ; i++ )); do
     echo "To MODIFY the user please write the username (CASE SENSITIVE)"
     echo "To CREATE the user please write the username (CASE SENSITIVE)"
     echo "Enter username here (enter 0 to quit):"
-    read -r $username
+    read -r username
 
     if [[ $username -eq 0 ]]; then
       break
