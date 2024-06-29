@@ -6,10 +6,34 @@ main(){
     
     mariadbinstall
     
-    echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
-    read -sr root_password
-    mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+    ## Try connecting with an empty password
+    if mysql -u root >/dev/null 2>&1; then
+      echo "WARNING: MariaDB root user seems to be accessible without a password."
+      echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
+      read -sr root_password
+    else
+      echo "MariaDB root user has already a password for access."
+      echo "Do you want to reset the password (y/N) :"
+      read -r password
+      if [[ "$password" =~ ^[Yy]$ ]]; then
+        echo "Enter the desired default root password for MariaDB (Press ENTER to keep it empty):"
+        read -sr root_password1
+        mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password1');"
+      fi
+    fi
     
+# Only attempt to modify terminal settings if interactive
+[[ $- == *i* ]] && stty -echo  # Silence password echo (if interactive)
+    
+echo $root_password | sudo mariadb_secure_installation << EOF
+Y
+$root_password
+$root_password
+Y
+Y
+Y
+EOF
+
     # Check for existing users
     echo "Checking for existing users..."
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user" 2>/dev/null)
@@ -121,7 +145,12 @@ set_user_password() {
 }
 
 
-main "$@"; exit
+main "$@"; 
+
+# Restore terminal settings if modified
+[[ $- == *i* ]] && stty echo  # Restore echo (if interactive)
+
+exit
 
 
 # This script stores the root password in plain text. Consider using
