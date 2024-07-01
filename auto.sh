@@ -7,11 +7,9 @@ main(){
     mariadbinstall
     
     echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
-    read -sr root_password1
+    read -sr root_password
     
-    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password1');"
-
-
+    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
 
     # Check for existing users
     echo "Checking for existing users..."
@@ -23,8 +21,6 @@ main(){
 
 
     user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
-
-
 
     if [[ $? -eq 0 ]]; then
       echo "These are the list of users: 
@@ -45,10 +41,29 @@ $user_count users found. Do you want to manage them (y/N): "
     fi
 }
 
-# Function to manage existing users (unchanged)
 managing_users() {
-  for (( i=1; i!=0 ; i++ )); do
-    echo "To MODIFY the user please write the username to modify(CASE SENSITIVE)"
+  created_users=()  # List to store usernames of created users
+  modified_users=()  # List to store usernames of modified users
+
+  while true; do
+    user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
+
+    # Extract the count (assuming the first line is the count)
+    user_count=${user_count%% *}
+
+
+    user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
+
+    if [[ $? -eq 0 ]]; then
+      echo "These are the list of users: 
+$user_list
+"    
+      echo "
+$user_count users found.
+"
+    fi
+    echo "Notice"
+    echo "To MODIFY the user please write the username to modify (CASE SENSITIVE)"
     echo "To CREATE the user please write the username (CASE SENSITIVE)"
     echo "Enter username here (enter 'quit' to exit):"
     read -r username
@@ -57,6 +72,7 @@ managing_users() {
     if [[ "$username" == "quit" ]]; then
       break  # Exit the loop
     fi
+
     # Check if user already exists
     if mysql -u root -p$root_password -e "SELECT * FROM mysql.user WHERE User='$username'" >/dev/null 2>&1; then
       echo "User '$username' already exists."
@@ -64,11 +80,33 @@ managing_users() {
       read -r modify_password
       if [[ "$modify_password" =~ ^[Yy]$ ]]; then
         set_user_password $username
+        modified_users+=("$username")  # Add to modified users list
       fi
     else
       set_user_password $username
+      created_users+=("$username")  # Add to created users list
     fi
+    clear
   done
+
+  # Print user creation and modification summary
+  echo "\nCreated Users:"
+  if [[ ${#created_users[@]} -gt 0 ]]; then
+    for user in "${created_users[@]}"; do
+      echo "- Username: $user"
+    done
+  else
+    echo "- No users created."
+  fi
+
+  echo "\nModified Users:"
+  if [[ ${#modified_users[@]} -gt 0 ]]; then
+    for user in "${modified_users[@]}"; do
+      echo "- Username: $user"
+    done
+  else
+    echo "- No users modified."
+  fi
 }
 
 
