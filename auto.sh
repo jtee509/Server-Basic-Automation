@@ -13,6 +13,7 @@ main(){
 
     # Check for existing users
     echo "Checking for existing users..."
+    clear 
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
 
     # Extract the count (assuming the first line is the count)
@@ -46,9 +47,6 @@ managing_users() {
   modified_users=()  # List to store usernames of modified users
 
   while true; do
-    echo "Notice"
-    echo "To MODIFY the user please write the username to modify (CASE SENSITIVE)"
-    echo "To CREATE the user please write the username (CASE SENSITIVE)"
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
 
     # Extract the count (assuming the first line is the count)
@@ -60,13 +58,16 @@ managing_users() {
     if [[ $? -eq 0 ]]; then
       echo "These are the list of users: 
 $user_list
-
 "    
       echo "
 $user_count users found.
-
 "
     fi
+
+    echo "Notice"
+    echo "To MODIFY the user please write the username to modify (CASE SENSITIVE)"
+    echo "To CREATE the user please write the username (CASE SENSITIVE)"
+    
     echo "Enter username here (enter 'quit' to exit):"
     read -r username
 
@@ -92,16 +93,19 @@ $user_count users found.
   done
 
   # Print user creation and modification summary
-  echo "\nCreated Users:"
+  echo "Created Users:
+  "
   if [[ ${#created_users[@]} -gt 0 ]]; then
     for user in "${created_users[@]}"; do
-      echo "- Username: $user"
+      echo "- Username: $user
+      "
     done
   else
     echo "- No users created."
   fi
 
-  echo "\nModified Users:"
+  echo "Modified Users:
+  "
   if [[ ${#modified_users[@]} -gt 0 ]]; then
     for user in "${modified_users[@]}"; do
       echo "- Username: $user"
