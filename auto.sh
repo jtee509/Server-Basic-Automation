@@ -48,13 +48,14 @@ $user_count users found. Do you want to manage them (y/N): "
 # Function to manage existing users (unchanged)
 managing_users() {
   for (( i=1; i!=0 ; i++ )); do
-    echo "To MODIFY the user please write the username (CASE SENSITIVE)"
+    echo "To MODIFY the user please write the username to modify(CASE SENSITIVE)"
     echo "To CREATE the user please write the username (CASE SENSITIVE)"
-    echo "Enter username here (enter 0 to quit):"
+    echo "Enter username here (enter 'quit' to exit):"
     read -r username
 
-    if [[ $username -eq 0 ]]; then
-      break
+    # Check for quit keyword
+    if [[ "$username" == "quit" ]]; then
+      break  # Exit the loop
     fi
     # Check if user already exists
     if mysql -u root -p$root_password -e "SELECT * FROM mysql.user WHERE User='$username'" >/dev/null 2>&1; then
