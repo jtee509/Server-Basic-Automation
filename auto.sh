@@ -114,30 +114,43 @@ $user_count users found.
     fi
 
     echo "Notice"
-    echo "To MODIFY the user please write the username to modify (CASE SENSITIVE)"
-    echo "To CREATE the user please write the username (CASE SENSITIVE)"
+    echo "  To MODIFY the user please write the username (CASE SENSITIVE)"
+    echo "  To CREATE a new user please write 'new'"
+    echo "  To DELETE a user please write 'delete' followed by username (CASE SENSITIVE)"
     
-    echo "Enter username here (enter 'quit' to exit):"
-    read -r username
+    echo "Enter action (username, 'new', 'delete quit'):"
+    read -r action username
 
     # Check for quit keyword
-    if [[ "$username" == "quit" ]]; then
+    if [[ "$action" == "quit" ]]; then
       break  # Exit the loop
     fi
 
-    # Check if user already exists
-    if mysql -u root -p$root_password ping -h localhost -U "$username"; then
-      echo "User '$username' already exists."
-      echo "Do you want to modify the password (y/N)?"
-      read -r modify_password
-      if [[ "$modify_password" =~ ^[Yy]$ ]]; then
-        set_user_password $username
-        modified_users+=("$username")  # Add to modified users list
-      fi
-    else
-      set_user_password $username
-      created_users+=("$username")  # Add to created users list
-    fi
+    # Handle different actions
+    case $action in
+      new)
+        set_user_password ""  # Create new user
+        created_users+=("$username")
+        ;;
+      delete)
+        if [[ -z "$username" ]]; then
+          echo "Please provide username to delete."
+        else
+          delete_user "$username"
+        fi
+        ;;
+      *)
+        # Check if user exists for modify or unknown action
+        if mysql -u root -p$root_password ping -h localhost -U "$action"; then
+          username="$action"  # Update username for modify actions
+          modify_user "$username"
+          modified_users+=("$username")
+        else
+          echo "Invalid action or username '$action' does not exist."
+        fi
+        ;;
+    esac
+
     clear
   done
 
@@ -205,6 +218,76 @@ mariadbinstall() {
   fi
 }
 
+delete_user() {
+  local username=$1
+  echo "Are you sure you want to delete user '$username' (y/N)?"
+  read -r confirm_delete
+  if [[ "$confirm_delete" =~ ^[Yy]$ ]]; then
+    local sql="DROP USER '$username'@'%';"
+    local result=$(mysql -u root -p$root_password -e "$sql" 2>&1)
+    if [[ $? -eq 0 ]]; then
+      echo "User '$username' deleted successfully."
+    else
+      echo "Error deleting user '$username':"
+      echo "$result"  # Print the error message from mysql
+    fi
+  fi
+}
+
+# New function to handle user modification actions
+modify_user() {
+  local username=$1
+  echo "What do you want to modify for user '$username'?"
+  echo "  1) Change Password"
+  echo "  2) Change Username"
+  echo "  Enter any other key to cancel"
+  read -r modify_option
+
+  case $modify_option in
+    1)
+      set_user_password "$username"
+      ;;
+    2)
+      change_username "$username"
+      ;;
+    *)
+      echo "Modification cancelled."
+      ;;
+  esac
+}
+
+change_username() {
+  local username=$1
+  local new_username
+
+  while true; do
+    echo "Enter a new username for user '$username':"
+    read -r new_username
+
+    # Check if username is empty
+    if [[ -z "$new_username" ]]; then
+      echo "Username cannot be empty."
+      continue
+    fi
+
+    # Check if username already exists
+    if mysql -u root -p$root_password ping -h localhost -U "$new_username"; then
+      echo "Username '$new_username' already exists. Please choose another username."
+    else
+      # Update user with new username and privileges (replace with your actual update logic)
+      local sql="RENAME USER '$username'@'%' TO '$new_username'@'%'; GRANT ALL PRIVILEGES ON *.* TO '$new_username'@'%' IDENTIFIED BY (SELECT password FROM mysql.user WHERE User='$username'); FLUSH PRIVILEGES;"
+      local result=$(mysql -u root -p$root_password -e "$sql" 2>&1)
+      if [[ $? -eq 0 ]]; then
+        echo "Username for user '$username' changed to '$new_username' successfully."
+        username="$new_username"  # Update username for further use
+        break
+      else
+        echo "Error changing username for user '$username':"
+        echo "$result"  # Print the error message from mysql
+      fi
+    fi
+  done
+}
 
 # Function to set user password (with improved error handling)
 set_user_password() {
