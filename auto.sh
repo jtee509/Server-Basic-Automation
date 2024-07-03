@@ -6,10 +6,59 @@ main(){
     
     mariadbinstall
     
-    echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
-    read -sr root_password
-    
-    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+    # Function to check if cnf file exists
+    function cnf_exists() {
+      if [ -f "$cnf_file" ]; then
+        return 0  # True - file exists
+      else
+        return 1  # False - file doesn't exist
+      fi
+    }
+
+    # Define configuration file path (optional, adjust if needed)
+    cnf_file=~/.my.cnf
+
+    # Check if cnf file exists
+    if cnf_exists; then
+      # Verify password in cnf file (assuming it's in the format shown below)
+      cnf_password=$(grep -E "^password=.*$" "$cnf_file" | cut -d'=' -f2-)
+      if ! sudo mysql -u root -p"$cnf_password" -e "SHOW DATABASES;" 2>/dev/null; then
+        echo "Error: Existing cnf file might not contain the correct root password."
+        echo "1. Enter the correct root password:"
+        read -sr root_password
+        # Update cnf file or create a new one with the correct password (secure)
+        echo "[client]" > "$cnf_file"
+        echo "user=root" >> "$cnf_file"
+        echo "password=$root_password" >> "$cnf_file"
+        chmod 600 "$cnf_file"
+        echo "Updated cnf file with the provided password."
+      else
+        echo "Using existing cnf file for authentication."
+      fi
+    else
+      # Prompt for password securely (hidden input) if cnf file doesn't exist
+      echo "Enter the desired default MariaDB root password for MariaDB:"
+      read -sr root_password
+
+      # Create the cnf file with restricted permissions (more secure)
+      echo "[client]" > "$cnf_file"
+      echo "user=root" >> "$cnf_file"
+      echo "password=$root_password" >> "$cnf_file"
+      chmod 600 "$cnf_file"
+
+      echo "Created cnf file: $cnf_file"
+    fi
+
+    # Now you can use mysql commands with the cnf file (more secure)
+    sudo mysql --defaults-file="$cnf_file" -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+
+    # Optional: Unset the variable for security (if using the variable)
+    # unset root_password
+
+#    echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
+#    read -sr root_password
+#    
+#    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
 
     # Check for existing users
     echo "Checking for existing users..."
