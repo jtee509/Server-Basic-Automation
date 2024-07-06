@@ -28,6 +28,7 @@ main(){
         read -sr root_password
         # Update cnf file or create a new one with the correct password (secure)
         echo "[client]" > "$cnf_file"
+        
         echo "user=root" >> "$cnf_file"
         echo "password=$root_password" >> "$cnf_file"
         chmod 600 "$cnf_file"
@@ -50,7 +51,7 @@ main(){
     fi
 
     # Now you can use mysql commands with the cnf file (more secure)
-    sudo mysql --defaults-file="$cnf_file" -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+    sudo mysql --defaults-file="$cnf_file" -e "UPDATE mysql.user SET password='$root_password' WHERE User='root'; FLUSH PRIVILEGES;"
 
     # Optional: Unset the variable for security (if using the variable)
     # unset root_password
