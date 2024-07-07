@@ -5,83 +5,12 @@ main(){
     sudo apt update
     
     mariadbinstall
+
+    echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
+    read -sr root_password
     
-    # Function to check if cnf file exists
-    function cnf_exists() {
-      if [ -f "$cnf_file" ]; then
-        return 0  # True - file exists
-      else
-        return 1  # False - file doesn't exist
-      fi
-    }
+    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
 
-    # Function to retrieve password from cnf file (if it exists)
-    function get_cnf_password() {
-      if cnf_exists; then
-        cnf_password=$(grep -E "^password=.*$" "$cnf_file" | cut -d'=' -f2-)
-        echo "$cnf_password"
-      else
-        echo ""  # Return empty string if file doesn't exist
-      fi
-    }
-
-    # Define configuration file path (optional, adjust if needed)
-    cnf_file=~/.my.cnf
-
-    # Check if cnf file exists
-    if cnf_exists; then
-      # Verify password in cnf file
-      cnf_password=$(get_cnf_password)
-      if ! sudo mysql -u root -p"$cnf_password" -e "SHOW DATABASES;" 2>/dev/null; then
-        echo "Error: Existing cnf file might not contain the correct root password."
-        # Prompt for password securely (hidden input)
-        echo "1. Enter the correct root password (hidden input):"
-        read -sr root_password
-        echo
-
-        # Update cnf file with the correct password (secure)
-        echo "[client]" > "$cnf_file"
-        echo "user=root" >> "$cnf_file"
-        echo "password=$root_password" >> "$cnf_file"
-        chmod 600 "$cnf_file"  # Set strict permissions
-        echo "Updated cnf file with the provided password."
-      else
-        echo "Using existing cnf file for authentication."
-      fi
-    else
-      # Prompt for password securely (hidden input)
-      echo "Enter the desired default MariaDB root password for MariaDB (hidden input):"
-      read -sr root_password
-      echo
-
-      # Create the cnf file with restricted permissions (more secure)
-      echo "[client]" > "$cnf_file"
-      echo "user=root" >> "$cnf_file"
-      echo "password=$root_password" >> "$cnf_file"
-      chmod 600 "$cnf_file"  # Set strict permissions
-
-      echo "Created cnf file: $cnf_file"
-    fi
-
-    # **IMPORTANT SECURITY NOTE:**
-    # - This script prompts for the password but hides the input using `read -sr`.
-    # - It's generally recommended to avoid storing the password in plain text 
-    #   in the cnf file. Consider using a password manager or a more secure 
-    #   authentication method.
-
-    # Now you can use mysql commands with the cnf file (more secure)
-    sudo mysql --defaults-file="$cnf_file" -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
-
-
-    # Optional: Unset the variable for security (if using the variable)
-    # unset root_password
-
-#    echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
-#    read -sr root_password
-#    
-#    sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
-
-    # Check for existing users
     echo "Checking for existing users..."
     clear 
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
@@ -139,21 +68,34 @@ $user_count users found.
     echo "  To CREATE a new user please write 'new'"
     echo "  To DELETE a user please write 'delete' followed by username (CASE SENSITIVE)"
     
-    echo "Enter action (username, 'new', 'delete quit'):"
-    read -r action username
+    echo "Enter action (1: username, 2: new, 3: delete, 4: quit):"
+    read -r action
 
-    # Check for quit keyword
-    if [[ "$action" == "quit" ]]; then
+    # Check for quit option
+    if [[ "$action" == "4" ]]; then
       break  # Exit the loop
     fi
 
-    # Handle different actions
+    # Handle different actions using a case statement with numbers
     case $action in
-      new)
-        set_user_password ""  # Create new user
-        created_users+=("$username")
+      1)
+        echo "Enter username:"
+        read -r username
+        # Check if user exists for modify
+        if mysql -u root -p$root_password ping -h localhost -U "$username"; then
+          modify_user "$username"
+          modified_users+=("$username")
+        else
+          echo "Username '$action' does not exist."
+        fi
         ;;
-      delete)
+      2)
+        set_user_password ""  # Create new user
+        created_users+=("$username")  # Assuming username is already defined elsewhere
+        ;;
+      3)
+        echo "Enter username to delete:"
+        read -r username
         if [[ -z "$username" ]]; then
           echo "Please provide username to delete."
         else
@@ -161,18 +103,12 @@ $user_count users found.
         fi
         ;;
       *)
-        # Check if user exists for modify or unknown action
-        if mysql -u root -p$root_password ping -h localhost -U "$action"; then
-          username="$action"  # Update username for modify actions
-          modify_user "$username"
-          modified_users+=("$username")
-        else
-          echo "Invalid action or username '$action' does not exist."
-        fi
+        echo "Invalid action."
         ;;
     esac
 
     clear
+
   done
 
   # Print user creation and modification summary
