@@ -15,43 +15,63 @@ main(){
       fi
     }
 
+    # Function to retrieve password from cnf file (if it exists)
+    function get_cnf_password() {
+      if cnf_exists; then
+        cnf_password=$(grep -E "^password=.*$" "$cnf_file" | cut -d'=' -f2-)
+        echo "$cnf_password"
+      else
+        echo ""  # Return empty string if file doesn't exist
+      fi
+    }
+
     # Define configuration file path (optional, adjust if needed)
     cnf_file=~/.my.cnf
 
     # Check if cnf file exists
     if cnf_exists; then
-      # Verify password in cnf file (assuming it's in the format shown below)
-      cnf_password=$(grep -E "^password=.*$" "$cnf_file" | cut -d'=' -f2-)
+      # Verify password in cnf file
+      cnf_password=$(get_cnf_password)
       if ! sudo mysql -u root -p"$cnf_password" -e "SHOW DATABASES;" 2>/dev/null; then
         echo "Error: Existing cnf file might not contain the correct root password."
-        echo "1. Enter the correct root password:"
+        # Prompt for password securely (hidden input)
+        echo "1. Enter the correct root password (hidden input):"
         read -sr root_password
-        # Update cnf file or create a new one with the correct password (secure)
+        echo
+
+        # Update cnf file with the correct password (secure)
         echo "[client]" > "$cnf_file"
-        
         echo "user=root" >> "$cnf_file"
         echo "password=$root_password" >> "$cnf_file"
-        chmod 600 "$cnf_file"
+        chmod 600 "$cnf_file"  # Set strict permissions
         echo "Updated cnf file with the provided password."
       else
         echo "Using existing cnf file for authentication."
       fi
     else
-      # Prompt for password securely (hidden input) if cnf file doesn't exist
-      echo "Enter the desired default MariaDB root password for MariaDB:"
+      # Prompt for password securely (hidden input)
+      echo "Enter the desired default MariaDB root password for MariaDB (hidden input):"
       read -sr root_password
+      echo
 
       # Create the cnf file with restricted permissions (more secure)
       echo "[client]" > "$cnf_file"
       echo "user=root" >> "$cnf_file"
       echo "password=$root_password" >> "$cnf_file"
-      chmod 600 "$cnf_file"
+      chmod 600 "$cnf_file"  # Set strict permissions
 
       echo "Created cnf file: $cnf_file"
     fi
 
+    # **IMPORTANT SECURITY NOTE:**
+    # - This script prompts for the password but hides the input using `read -sr`.
+    # - It's generally recommended to avoid storing the password in plain text 
+    #   in the cnf file. Consider using a password manager or a more secure 
+    #   authentication method.
+
     # Now you can use mysql commands with the cnf file (more secure)
-    sudo mysql --defaults-file="$cnf_file" -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$root_password';"
+    sudo mysql --defaults-file="$cnf_file" -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
+
 
     # Optional: Unset the variable for security (if using the variable)
     # unset root_password
