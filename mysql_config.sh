@@ -76,24 +76,34 @@ $user_count users found.
       1)
         echo "Enter username to modify:"
         read -r username
-
+        
         # Check if user exists for modify
-        if mysql -u root -p$root_password ping -h localhost -U "$username"; then
+        if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
           modify_user "$username"
           modified_users+=("$username")
         else
-          echo "Username '$username' does not exist."
+          echo "Username '$username' does not exist. Do you want to create it (y/N): "
+          read -r create
+          if [[ "$create" =~ ^[Yy]$ ]]; then
+            set_user_password "$username"  # Create new user
+            # Assuming username is already defined elsewhere
+            created_users+=("$username")
+          fi
         fi
         ;;
       2)
         echo "Enter username to create:"
         read -r username
         # Check if user exists for modify
-        if mysql -u root -p$root_password ping -h localhost -U "$username"; then
-          modify_user "$username"
-          modified_users+=("$username")
+        if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
+          echo "Username '$username' does exist. Do you want to modify it (y/N): "
+          read -r modify
+          if [[ "$create" =~ ^[Yy]$ ]]; then
+            modify_user "$username"
+            modified_users+=("$username")
+          fi
         else
-          set_user_password ""  # Create new user
+          set_user_password "$username"  # Create new user
           # Assuming username is already defined elsewhere
           created_users+=("$username")
         fi
@@ -113,6 +123,11 @@ $user_count users found.
     esac
     clear
   done
+
+  clear
+
+  echo "Thank you for using the system"
+  echo "This are the list of users created or modified"
 
   # Print user creation and modification summary
   echo "Created Users:
@@ -158,11 +173,12 @@ mariadbinstall() {
       sudo apt install mariadb-server -y
 
       sudo systemctl start mariadb
-      echo "Do you want to enable mariadb on boot (y/N): "
-      read -r enabled
-      if [[ "$enabled" =~ ^[Yy]$ ]]; then
-        sudo systemctl enable mariadb  
-      fi
+# Uncomment if you want to have enable options
+#      echo "Do you want to enable mariadb on boot (y/N): "
+#      read -r enabled
+#      if [[ "$enabled" =~ ^[Yy]$ ]]; then
+#        sudo systemctl enable mariadb  
+#     fi
     fi
   else
     # Install MariaDB
@@ -231,7 +247,7 @@ change_username() {
     fi
 
     # Check if username already exists
-    if mysql -u root -p$root_password ping -h localhost -U "$new_username"; then
+    if mysql -u root -p$root_password -e "SELECT COUNT(*) FROM mysql.user WHERE User='$new_username'" 2>/dev/null | grep -q "^1"; then
       echo "Username '$new_username' already exists. Please choose another username."
     else
       # Update user with new username and privileges (replace with your actual update logic)
