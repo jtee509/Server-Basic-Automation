@@ -48,22 +48,6 @@ managing_users() {
   deleted_users=() 
 
   while true; do
-    user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
-
-    # Extract the count (assuming the first line is the count)
-    user_count=${user_count%% *}
-
-
-    user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
-
-    if [[ $? -eq 0 ]]; then
-      echo "These are the list of users: 
-$user_list
-"    
-      echo "
-$user_count users found.
-"
-    fi
     # Define rows of the logo
     row1=" _  _  _  _  ____   __   __       ___  __   __ _  ____  __  ___  _  _  ____   __  ____  __  __   __ _  "
     row2="( \/ )( \/ )/ ___) /  \ (  )     / __)/  \ (  ( \(  __)(  )/ __)/ )( \(  _ \ / _\(_  _)(  )/  \ (  ( \ "
@@ -75,6 +59,24 @@ $user_count users found.
     echo "$row2"
     echo "$row3"
     echo "$row4"
+    user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
+
+    # Extract the count (assuming the first line is the count)
+    user_count=${user_count%% *}
+
+
+    user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
+
+    if [[ $? -eq 0 ]]; then
+      echo "
+These are the list of users: 
+$user_list
+"    
+      echo "
+
+$user_count users found.
+"
+    fi
 
     echo "Enter action (1: modify username, 2: create new user, 3: delete user, 4: quit):"
     read -r action
