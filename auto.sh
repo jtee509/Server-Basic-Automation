@@ -62,13 +62,8 @@ $user_list
 $user_count users found.
 "
     fi
-
-    echo "Notice"
-    echo "  To MODIFY the user please write the username (CASE SENSITIVE)"
-    echo "  To CREATE a new user please write 'new'"
-    echo "  To DELETE a user please write 'delete' followed by username (CASE SENSITIVE)"
     
-    echo "Enter action (1: username, 2: new, 3: delete, 4: quit):"
+    echo "Enter action (1: modify username, 2: create new user, 3: delete user, 4: quit):"
     read -r action
 
     # Check for quit option
@@ -79,19 +74,21 @@ $user_count users found.
     # Handle different actions using a case statement with numbers
     case $action in
       1)
-        echo "Enter username:"
+        echo "Enter username to modify:"
         read -r username
+
         # Check if user exists for modify
         if mysql -u root -p$root_password ping -h localhost -U "$username"; then
           modify_user "$username"
           modified_users+=("$username")
         else
-          echo "Username '$action' does not exist."
+          echo "Username '$username' does not exist."
         fi
         ;;
       2)
         set_user_password ""  # Create new user
-        created_users+=("$username")  # Assuming username is already defined elsewhere
+        # Assuming username is already defined elsewhere
+        created_users+=("$username")
         ;;
       3)
         echo "Enter username to delete:"
@@ -108,8 +105,6 @@ $user_count users found.
     esac
 
     clear
-
-  done
 
   # Print user creation and modification summary
   echo "Created Users:
