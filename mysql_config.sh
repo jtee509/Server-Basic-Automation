@@ -105,6 +105,12 @@ $user_count users found.
       1)
         echo "Enter username to modify:"
         read -r username
+
+        # Check if username is empty
+        if [[ -z "$username" ]]; then
+          echo "Username cannot be empty."
+          continue
+        fi
         
         # Check if user exists for modify
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
@@ -124,6 +130,13 @@ $user_count users found.
       2)
         echo "Enter username to create:"
         read -r username
+
+        # Check if username is empty
+        if [[ -z "$username" ]]; then
+          echo "Username cannot be empty."
+          continue
+        fi
+
         # Check if user exists for modify
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
           echo "Username '$username' does exist. Do you want to modify it (y/N): "
@@ -142,6 +155,13 @@ $user_count users found.
       3)
         echo "Enter username to delete:"
         read -r username
+
+        # Check if username is empty
+        if [[ -z "$username" ]]; then
+          echo "Username cannot be empty."
+          continue
+        fi
+
         if [[ -z "$username" ]]; then
           echo "Please provide username to delete."
         else
