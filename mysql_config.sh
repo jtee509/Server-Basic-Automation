@@ -43,7 +43,9 @@ $user_count users found. Do you want to manage them (y/N): "
 
 managing_users() {
   created_users=()  # List to store usernames of created users
-  modified_users=()  # List to store usernames of modified users
+  old_username=()
+  new_username=()  # List to store usernames of modified users
+  deleted_users=() 
 
   while true; do
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
@@ -62,7 +64,18 @@ $user_list
 $user_count users found.
 "
     fi
-    
+    # Define rows of the logo
+    row1=" _  _  _  _  ____   __   __       ___  __   __ _  ____  __  ___  _  _  ____   __  ____  __  __   __ _  "
+    row2="( \/ )( \/ )/ ___) /  \ (  )     / __)/  \ (  ( \(  __)(  )/ __)/ )( \(  _ \ / _\(_  _)(  )/  \ (  ( \ "
+    row3="/ \/ \ )  / \___ \(  O )/ (_/\  ( (__(  O )/    / ) _)  )(( (_ \) \/ ( )   //    \ )(   )((  O )/    / "
+    row4="\_)(_/(__/  (____/ \__\)\____/   \___)\__/ \_)__)(__)  (__)\___/\____/(__\_)\_/\_/(__) (__)\__/ \_)__) "
+
+    # Print each row of the logo
+    echo "$row1"
+    echo "$row2"
+    echo "$row3"
+    echo "$row4"
+
     echo "Enter action (1: modify username, 2: create new user, 3: delete user, 4: quit):"
     read -r action
 
@@ -79,8 +92,9 @@ $user_count users found.
         
         # Check if user exists for modify
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
+          old_username+=("$username")
           modify_user "$username"
-          modified_users+=("$username")
+          new_username+=("$username")
         else
           echo "Username '$username' does not exist. Do you want to create it (y/N): "
           read -r create
@@ -98,9 +112,10 @@ $user_count users found.
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
           echo "Username '$username' does exist. Do you want to modify it (y/N): "
           read -r modify
-          if [[ "$create" =~ ^[Yy]$ ]]; then
+          if [[ "$modify" =~ ^[Yy]$ ]]; then
+            old_username+=("$username")
             modify_user "$username"
-            modified_users+=("$username")
+            new_username+=("$username")
           fi
         else
           set_user_password "$username"  # Create new user
@@ -115,6 +130,7 @@ $user_count users found.
           echo "Please provide username to delete."
         else
           delete_user "$username"
+          deleted_users+=("$username")
         fi
         ;;
       *)
@@ -127,13 +143,13 @@ $user_count users found.
   clear
 
   echo "Thank you for using the system"
-  echo "This are the list of users created or modified"
+  echo "This are the list of users modified"
 
   # Print user creation and modification summary
-  echo "Created Users:
-  "
   if [[ ${#created_users[@]} -gt 0 ]]; then
     for user in "${created_users[@]}"; do
+      echo "Created Users:
+      "
       echo "- Username: $user
       "
     done
@@ -141,10 +157,28 @@ $user_count users found.
     echo "- No users created."
   fi
 
-  echo "Modified Users:
-  "
-  if [[ ${#modified_users[@]} -gt 0 ]]; then
-    for user in "${modified_users[@]}"; do
+  if [[ ${#new_username[@]} -gt 0 ]]; then
+    for ((i=0; i<${#new_username[@]}; ++i)); do
+      echo "Modified Users:
+      "
+      # Assuming you have a way to get the corresponding old username for each new username
+      old_user="${get_old_username[i]}"  # Replace with your logic to retrieve the old username
+  
+      # Add the old username to the 'old_username' array
+      old_username+=("$old_user")
+  
+      echo "- Old Username: ${old_username[i]}"
+      echo "- New Username: ${new_username[i]}"
+      echo ""  # Add an empty line for better formatting
+    done
+  else
+    echo "- No users modified."
+  fi
+
+  if [[ ${#deleted_users[@]} -gt 0 ]]; then
+    for user in "${deleted_users[@]}"; do
+      echo "Deleted Users:
+      "
       echo "- Username: $user"
     done
   else
