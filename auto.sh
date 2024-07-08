@@ -41,7 +41,6 @@ $user_count users found. Do you want to manage them (y/N): "
     fi
 }
 
-
 managing_users() {
   created_users=()  # List to store usernames of created users
   modified_users=()  # List to store usernames of modified users
@@ -63,32 +62,55 @@ $user_list
 $user_count users found.
 "
     fi
-
-    echo "Notice"
-    echo "To MODIFY the user please write the username to modify (CASE SENSITIVE)"
-    echo "To CREATE the user please write the username (CASE SENSITIVE)"
     
-    echo "Enter username here (enter 'quit' to exit):"
-    read -r username
+    echo "Enter action (1: modify username, 2: create new user, 3: delete user, 4: quit):"
+    read -r action
 
-    # Check for quit keyword
-    if [[ "$username" == "quit" ]]; then
+    # Check for quit option
+    if [[ "$action" == "4" ]]; then
       break  # Exit the loop
     fi
 
-    # Check if user already exists
-    if mysql -u root -p$root_password ping -h localhost -U "$username"; then
-      echo "User '$username' already exists."
-      echo "Do you want to modify the password (y/N)?"
-      read -r modify_password
-      if [[ "$modify_password" =~ ^[Yy]$ ]]; then
-        set_user_password $username
-        modified_users+=("$username")  # Add to modified users list
-      fi
-    else
-      set_user_password $username
-      created_users+=("$username")  # Add to created users list
-    fi
+    # Handle different actions using a case statement with numbers
+    case $action in
+      1)
+        echo "Enter username to modify:"
+        read -r username
+
+        # Check if user exists for modify
+        if mysql -u root -p$root_password ping -h localhost -U "$username"; then
+          modify_user "$username"
+          modified_users+=("$username")
+        else
+          echo "Username '$username' does not exist."
+        fi
+        ;;
+      2)
+        echo "Enter username to create:"
+        read -r username
+        # Check if user exists for modify
+        if mysql -u root -p$root_password ping -h localhost -U "$username"; then
+          modify_user "$username"
+          modified_users+=("$username")
+        else
+          set_user_password ""  # Create new user
+          # Assuming username is already defined elsewhere
+          created_users+=("$username")
+        fi
+        ;;
+      3)
+        echo "Enter username to delete:"
+        read -r username
+        if [[ -z "$username" ]]; then
+          echo "Please provide username to delete."
+        else
+          delete_user "$username"
+        fi
+        ;;
+      *)
+        echo "Invalid action."
+        ;;
+    esac
     clear
   done
 
@@ -114,15 +136,6 @@ $user_count users found.
     echo "- No users modified."
   fi
 }
-
-
-
-is_installed() {
-  # Check if mariadb-server is installed
-  dpkg-query -l mariadb-server >/dev/null 2>&1
-  return $?
-}
-
 
 
 is_installed() {
