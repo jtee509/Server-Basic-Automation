@@ -34,9 +34,11 @@ main(){
     user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
 
     if [[ $? -eq 0 ]]; then
-      echo "These are the list of users: 
+      echo "
+These are the list of users: 
 $user_list"    
       echo "
+
 $user_count users found. Do you want to manage them (y/N): "
       read -r manage_users
       clear
