@@ -74,7 +74,7 @@ $user_count users found. Do you want to manage them (y/N): "
 managing_users() {
   created_users=()  # List to store usernames of created users
   old_username=()
-  new_username=()  # List to store usernames of modified users
+  new_usernames=()  # List to store usernames of modified users
   deleted_users=() 
 
   while true; do
@@ -132,7 +132,7 @@ $user_count users found.
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
           old_username+=("$username")
           modify_user "$username"
-          new_username+=("$username")
+          new_usernames+=("$new_username")
         else
           echo "Username '$username' does not exist. Do you want to create it (y/N): "
           read -r create
