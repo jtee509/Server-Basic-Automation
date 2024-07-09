@@ -35,7 +35,7 @@ main(){
 
       echo ""
       echo ""
-      
+
       echo "Enter the desired default MariaDB root password for MariaDB :"
       read -sr root_password
   
@@ -53,6 +53,17 @@ main(){
     echo "Checking for existing users..."
     
     clear
+    # Define rows of the logo
+    row1=" _  _  _  _  ____   __   __       ___  __   __ _  ____  __  ___  _  _  ____   __  ____  __  __   __ _  "
+    row2="( \/ )( \/ )/ ___) /  \ (  )     / __)/  \ (  ( \(  __)(  )/ __)/ )( \(  _ \ / _\(_  _)(  )/  \ (  ( \ "
+    row3="/ \/ \ )  / \___ \(  O )/ (_/\  ( (__(  O )/    / ) _)  )(( (_ \) \/ ( )   //    \ )(   )((  O )/    / "
+    row4="\_)(_/(__/  (____/ \__\)\____/   \___)\__/ \_)__)(__)  (__)\___/\____/(__\_)\_/\_/(__) (__)\__/ \_)__) "
+    
+    # Print each row of the logo
+    echo "$row1"
+    echo "$row2"
+    echo "$row3"
+    echo "$row4"
 
     user_count=$(mysql -u root -p$root_password -e "SELECT COUNT(*) AS total_users FROM mysql.user" 2>/dev/null)
 
@@ -65,6 +76,7 @@ main(){
     # The echo placement for correct line formating
     if [[ $? -eq 0 ]]; then
       echo "
+
 These are the list of users: 
 $user_list"    
       echo "
