@@ -210,39 +210,37 @@ $user_count users found.
   fi
 
 
-# Seperating modified username and password 
-  old_username1=()
-  new_username1=()
+old_username1=()
+new_username1=()
 
-  if [[ ${#old_username[@]} -gt 0 ]]; then
-    echo "Modified Users:
-     "
-    for ((i=0; i<${#old_username[@]}; ++i)); do
+if [[ ${#old_username[@]} -gt 0 ]]; then
+  echo "Modified Users:"
 
-      old_user="${old_username[i]}"
-      new_user="${new_username[i]}"
+  for ((i=0; i<${#old_username[@]}; ++i)); do
+    old_user="${old_username[i]}"
+    new_user="${new_username[i]}"
 
-      if [[ "$old_user" == "$new_user" ]]; then
-        $old_username1+=("$old_user")
-      else
-        echo "- Old Username: ${old_username[i]}"
-        echo "- New Username: ${new_username[i]}"
-        echo ""
-      fi
-    done
+    if [[ "$old_user" == "$new_user" ]]; then
+      old_username1+=("$old_user")
+    else
+      echo "- Old Username: ${old_username[i]}"
+      echo "- New Username: ${new_username[i]}"
+      echo ""
+    fi
+  done
 
-    for ((i=0; i<${#old_username1[@]}; ++i)); do
-      echo "Modified User (Password Only):"
+  for ((i=0; i<${#old_username1[@]}; ++i)); do
+    echo "Modified User (Password Only):"
 
-      if [[ -z "$username" ]]; then
-
-      else  
-        echo "- Username: ${old_username1[i]}"
-      fi
-    done
-  else
-    echo "- No users modified."
-  fi
+    if [[ -z "$username" ]]; then
+    # No action if username is empty
+    else
+      echo "- Username: ${old_username1[i]}"
+    fi
+  done
+else
+  echo "- No users modified."
+fi
 
   if [[ ${#deleted_users[@]} -gt 0 ]]; then
     for user in "${deleted_users[@]}"; do
