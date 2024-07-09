@@ -19,10 +19,6 @@ echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
 
-# Set ownership and permissions for the share directory (adjust as needed)
-sudo chown root:smbgrp "$share_dir"
-sudo chmod 750 "$share_dir"
-
 sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
 
 # Create a basic Samba configuration file (/etc/samba/smb.conf)
@@ -46,6 +42,7 @@ EOF
 
 # Important: User Input Loop for Multiple Shares
 # User Input Loop for Multiple Shares
+path2=()
 num_shares=0
 while true; do
   # User Input for File Type and Permissions
@@ -131,7 +128,7 @@ while true; do
      # encrypt passwords = yes
    # Add additional share definitions and options here
 EOF
-
+   path2+=($path)
   # Increment counter for share naming
   ((num_shares++))
 done
@@ -139,6 +136,13 @@ done
 sudo groupadd --system smbgroup 
 
 sudo useradd --system -no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
+
+for i in "${path2[@]}"; do 
+   # Set ownership and permissions for the share directory (adjust as needed)
+   sudo chown root:smbgroup "$i"
+   sudo chmod 750 "$i"
+done
+
 
 # Restart Samba services to apply the configuration
 sudo systemctl restart smb nmb
