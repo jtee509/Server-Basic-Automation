@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Operating System (Linux Distro) Requirements:
-# Ubuntu Server
+# Ubuntu Server 24.04
 # Debian Based Distro
 
 # Notice:
