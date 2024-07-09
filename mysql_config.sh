@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Operating System (Linux Distro) Requirements:
+# Ubuntu Server
+# Debian Based Distro
+
 # Notice:
 # This ONLY resets the root passwords only on every attempt of running it
 # Consider using environment variables or a password manager for improved security,
