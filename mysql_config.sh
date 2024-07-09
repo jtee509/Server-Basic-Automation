@@ -213,6 +213,7 @@ $user_count users found.
     for ((i=0; i<${#old_username[@]}; ++i)); do
       echo "Modified User :"
       echo "- Username: ${old_username[i]}"
+    done
   else
     echo "- No users modified."
   fi
