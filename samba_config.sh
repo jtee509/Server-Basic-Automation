@@ -19,7 +19,9 @@ echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
 
-sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+if [ -f /etc/samba/smb.conf ]; then
+  sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+fi
 
 # Create a basic Samba configuration file (/etc/samba/smb.conf)
 echo "Creating smb.conf"
@@ -45,91 +47,94 @@ EOF
 path2=()
 num_shares=0
 while true; do
-  # User Input for File Type and Permissions
-  file_type=""
-  write_access="yes"
+   # User Input for File Type and Permissions
+   file_type=""
+   write_access="yes"
 
-  echo "What type of file would you like to create (public, private, or other)? (enter 'done' to finish)"
-  read -r file_type
+   echo "What type of file would you like to create (1 - public, 2 - private, 3 - other)? (enter 'done' to finish)"
+   read -r file_type
 
-  if [[ "$file_type" == "done" ]]; then
-    break
-  fi
+   if [[ "$file_type" == "done" ]]; then
+     break
+   fi
 
-  while true; do
-    echo "Do you want to allow write access to this file (yes/no)?"
-    read -r write_access
-    if [[ "$write_access" =~ ^[YyNn]$ ]]; then
-      break
-    fi
-    echo "Invalid input. Please enter yes or no."
-  done
+   while true; do
+     echo "Do you want to allow write access to this file (y/n)?"
+     read -r write_access1
+     if [[ "$write_access1" =~ ^[Yy]$ ]]; then
+       write_access="yes"
+       break
+     else
+       write_access="no"
+     fi
+     echo "Invalid input. Please enter 1 (y) or 2 (N)."
+   done
 
-  case $file_type in
-    public)
-      share_name="Public_File_$((num_shares + 1))"
-      public="yes"
-      writeable="$write_access"
-      # Prompt for directory path for public files
-      while true; do
-        echo "Enter the directory path for this public file (absolute path recommended):"
-        read -r file_dir
-        # Optional: Validate directory path
-        if [ -d "$file_dir" ]; then
-          break
-        fi
-        echo "Invalid directory path. Please enter a valid directory."
-      done
-      path="$file_dir"
-      ;;
-    private)
-      share_name="Private_File_$((num_shares + 1))"
-      public="yes"
-      writeable="no"
-      # Prompt for directory path for private files
-      while true; do
-        echo "Enter the directory path for this private file (absolute path recommended):"
-        read -r file_dir
-        # Optional: Validate directory path
-        if [ -d "$file_dir" ]; then
-          break
-        fi
-        echo "Invalid directory path. Please enter a valid directory."
-      done
-      path="$file_dir"
-      ;;
-    *)
-      # Handle other file types (optional)
-      echo "Unsupported file type. Please choose public or private."
-      continue
-      ;;
-  esac
+   case $file_type in
+     1)
+       share_name="Public_File_$((num_shares + 1))"
+       public="yes"
+       writeable="$write_access"
+       # Prompt for directory path for public files
+       while true; do
+         echo "Enter the directory path for this public file (absolute path recommended):"
+         read -r file_dir
+         # Optional: Validate directory path
+         if [ -d "$file_dir" ]; then
+           break
+         fi
+         echo "Invalid directory path. Please enter a valid directory."
+       done
+       path="$file_dir"
+       ;;
+     2)
+       share_name="Private_File_$((num_shares + 1))"
+       public="no"
+       writeable="no"
+       # Prompt for directory path for private files
+       while true; do
+         echo "Enter the directory path for this private file (absolute path recommended):"
+         read -r file_dir
+         # Optional: Validate directory path
+         if [ -d "$file_dir" ]; then
+           break
+         fi
+         echo "Invalid directory path. Please enter a valid directory."
+       done
+       path="$file_dir"
+       ;;
+     *)
+       # Handle other file types (optional)
+       echo "Unsupported file type. Please choose 1 (public) or 2 (private)."
+       continue
+       ;;
+   esac
 
-  sudo mkdir -p $path
+   sudo mkdir -p $path
 
-  # Write Share Configuration to File
-  sudo cat << EOF >> /etc/samba/shares.conf
-   [$share_name]
-     path = $path
-     force user = smbuser
-     force group = smbgroup
-     browseable = yes
-     read only = no
-     create mask = 0664 
-     force create mode = 0664 
-     directory mask = 0775 #new created files will have read and write
-     force directory mode = 0775
+   # Write Share Configuration to File
+   sudo cat << EOF >> /etc/samba/shares.conf
+      [$share_name]
+        path = $path
+        force user = smbuser
+        force group = smbgroup
+        browseable = yes
+        read only = no
+        create mask = 0664 
+        force create mode = 0664 
+        directory mask = 0775 #new created files will have read and write
+        force directory mode = 0775
 
-     # Adjust permissions based on write access choice
-     writeable = $writeable
-     
-     public = $public
-     # Uncomment for encrypted communication (recommended)
-     # encrypt passwords = yes
-   # Add additional share definitions and options here
+        # Adjust permissions based on write access choice
+        writeable = $writeable
+
+        public = $public
+        # Uncomment for encrypted communication (recommended)
+        # encrypt passwords = yes
+      # Add additional share definitions and options here
 EOF
    path2+=($path)
-  # Increment counter for share naming
+   # Increment counter for share naming
   ((num_shares++))
 done
 
