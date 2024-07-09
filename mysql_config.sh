@@ -220,8 +220,24 @@ $user_count users found.
 
   clear
 
-  echo "Thank you for using the system"
-  echo "This are the list of users modified"
+  # Define rows of the logo
+  row1=" _  _  _  _  ____   __   __       ___  __   __ _  ____  __  ___  _  _  ____   __  ____  __  __   __ _  "
+  row2="( \/ )( \/ )/ ___) /  \ (  )     / __)/  \ (  ( \(  __)(  )/ __)/ )( \(  _ \ / _\(_  _)(  )/  \ (  ( \ "
+  row3="/ \/ \ )  / \___ \(  O )/ (_/\  ( (__(  O )/    / ) _)  )(( (_ \) \/ ( )   //    \ )(   )((  O )/    / "
+  row4="\_)(_/(__/  (____/ \__\)\____/   \___)\__/ \_)__)(__)  (__)\___/\____/(__\_)\_/\_/(__) (__)\__/ \_)__) "
+    
+  # Print each row of the logo
+  echo "$row1"
+  echo "$row2"
+  echo "$row3"
+  echo "$row4"
+
+  echo "
+Thank you for using the system
+"
+  echo "
+This are the list of users modified
+"
 
   # Print user creation and modification summary
   if [[ ${#created_users[@]} -gt 0 ]]; then
