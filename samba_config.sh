@@ -11,6 +11,8 @@ sudo apt update
 # Install Samba and additional tools (adjust as required)
 sudo apt install samba samba-common-tools
 
+sudo mkdir /etc/samba
+
 clear
 
 echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
