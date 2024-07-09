@@ -132,7 +132,6 @@ $user_count users found.
         if mysql -u root -p$root_password -e "SELECT 1 FROM mysql.user WHERE User='$username'" 2>/dev/null | grep -q "^1"; then
           old_username+=("$username")
           modify_user "$username"
-          new_usernames+=("$new_username")
         else
           echo "Username '$username' does not exist. Do you want to create it (y/N): "
           read -r create
@@ -160,7 +159,6 @@ $user_count users found.
           if [[ "$modify" =~ ^[Yy]$ ]]; then
             old_username+=("$username")
             modify_user "$username"
-            new_username+=("$username")
           fi
         else
           set_user_password "$username"  # Create new user
@@ -210,37 +208,14 @@ $user_count users found.
   fi
 
 
-old_username1=()
-new_username1=()
-
-if [[ ${#old_username[@]} -gt 0 ]]; then
-  echo "Modified Users:"
-
-  for ((i=0; i<${#old_username[@]}; ++i)); do
-    old_user="${old_username[i]}"
-    new_user="${new_username[i]}"
-
-    if [[ "$old_user" == "$new_user" ]]; then
-      old_username1+=("$old_user")
-    else
-      echo "- Old Username: ${old_username[i]}"
-      echo "- New Username: ${new_username[i]}"
-      echo ""
-    fi
-  done
-
-  for ((i=0; i<${#old_username1[@]}; ++i)); do
-    echo "Modified User (Password Only):"
-
-    if [[ -z "$username" ]]; then
-      continue
-    else
-      echo "- Username: ${old_username1[i]}"
-    fi
-  done
-else
-  echo "- No users modified."
-fi
+  if [[ ${#old_username[@]} -gt 0 ]]; then
+    echo "Modified Users:"
+    for ((i=0; i<${#old_username[@]}; ++i)); do
+      echo "Modified User :"
+      echo "- Username: ${old_username[i]}"
+  else
+    echo "- No users modified."
+  fi
 
   if [[ ${#deleted_users[@]} -gt 0 ]]; then
     for user in "${deleted_users[@]}"; do
