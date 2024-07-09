@@ -17,8 +17,18 @@ main(){
     mariadbinstall
 
     #reseting root password
-    echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
-    read -sr root_password
+    while true; do
+      echo "Enter the desired default MariaDB root password for MariaDB :"
+      read -sr root_password
+  
+      # Check if password is empty
+      if [[ -z "$root_password" ]]; then
+        echo "Error: Password cannot be empty. Please enter a password."
+      else
+        # Exit the loop if password is not empty
+        break
+      fi
+    done
     
     sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
 
@@ -219,10 +229,11 @@ $user_count users found.
   fi
 
   if [[ ${#deleted_users[@]} -gt 0 ]]; then
+    echo "Deleted Users:
+    "
     for user in "${deleted_users[@]}"; do
-      echo "Deleted Users:
+      echo "- Username: $user
       "
-      echo "- Username: $user"
     done
   else
     echo "- No users modified."
