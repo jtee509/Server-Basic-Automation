@@ -233,7 +233,7 @@ if [[ ${#old_username[@]} -gt 0 ]]; then
     echo "Modified User (Password Only):"
 
     if [[ -z "$username" ]]; then
-    # No action if username is empty
+      continue
     else
       echo "- Username: ${old_username1[i]}"
     fi
