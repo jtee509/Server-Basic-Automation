@@ -1,18 +1,27 @@
 #!/bin/bash
 
+# Notice:
+# This ONLY resets the root passwords only on every attempt of running it
+# Consider using environment variables or a password manager for improved security,
+# especially in production environments.
+# If any of y'all does know how to modify it to store it in a cnf file please do state it. 
+
 main(){
     # Update package lists
     sudo apt update
     
     mariadbinstall
 
+    #reseting root password
     echo "Enter the desired default MariaDB root password for MariaDB (Press ENTER to keep it empty):"
     read -sr root_password
     
     sudo mysql -u root -e "SET PASSWORD FOR root@'localhost' = PASSWORD('$root_password');"
 
     echo "Checking for existing users..."
-    clear 
+    
+    clear
+
     # Define rows of the logo
     row1=" _  _  _  _  ____   __   __       ___  __   __ _  ____  __  ___  _  _  ____   __  ____  __  __   __ _  "
     row2="( \/ )( \/ )/ ___) /  \ (  )     / __)/  \ (  ( \(  __)(  )/ __)/ )( \(  _ \ / _\(_  _)(  )/  \ (  ( \ "
@@ -30,9 +39,10 @@ main(){
     # Extract the count (assuming the first line is the count)
     user_count=${user_count%% *}
 
-
+    # Extract the list (assuming the first line is the list)
     user_list=$(mysql -u root -p$root_password -e "SELECT User, Host FROM mysql.user" 2>/dev/null)
 
+    # The echo placement for correct line formating
     if [[ $? -eq 0 ]]; then
       echo "
 These are the list of users: 
@@ -55,6 +65,8 @@ $user_count users found. Do you want to manage them (y/N): "
     fi
 }
 
+
+# Functions for managing users
 managing_users() {
   created_users=()  # List to store usernames of created users
   old_username=()
@@ -193,19 +205,36 @@ $user_count users found.
     echo "- No users created."
   fi
 
-  if [[ ${#new_username[@]} -gt 0 ]]; then
-    for ((i=0; i<${#new_username[@]}; ++i)); do
-      echo "Modified Users:
-      "
-      # Assuming you have a way to get the corresponding old username for each new username
-      old_user="${get_old_username[i]}"  # Replace with your logic to retrieve the old username
-  
-      # Add the old username to the 'old_username' array
-      old_username+=("$old_user")
-  
-      echo "- Old Username: ${old_username[i]}"
-      echo "- New Username: ${new_username[i]}"
-      echo ""  # Add an empty line for better formatting
+
+# Seperating modified username and password 
+  old_username1=()
+  new_username1=()
+
+  if [[ ${#old_username[@]} -gt 0 ]]; then
+    echo "Modified Users:
+     "
+    for ((i=0; i<${#old_username[@]}; ++i)); do
+
+      old_user="${old_username[i]}"
+      new_user="${new_username[i]}"
+
+      if [[ "$old_user" == "$new_user" ]]; then
+        $old_username1+=("$old_user")
+      else
+        echo "- Old Username: ${old_username[i]}"
+        echo "- New Username: ${new_username[i]}"
+        echo ""
+      fi
+    done
+
+    for ((i=0; i<${#old_username1[@]}; ++i)); do
+      echo "Modified User (Password Only):"
+
+      if [[ -z "$username" ]]; then
+
+      else  
+        echo "- Username: ${old_username1[i]}"
+      fi
     done
   else
     echo "- No users modified."
@@ -297,6 +326,7 @@ modify_user() {
       change_username "$username"
       ;;
     *)
+      $username=""
       echo "Modification cancelled."
       ;;
   esac
@@ -355,12 +385,8 @@ set_user_password() {
   fi
 }
 
-
+#runing the main functions with all of the records
 main "$@"; 
 
+#ending of the records
 exit
-
-
-# This script stores the root password in plain text. Consider using
-# environment variables or a password manager for improved security,
-# especially in production environments.
