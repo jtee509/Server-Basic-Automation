@@ -79,12 +79,22 @@ while true; do
        writeable="$write_access"
        # Prompt for directory path for public files
        while true; do
-         echo "Enter the directory path for this public file (absolute path recommended):"
+         echo "Enter the name for this file:"
          read -r file_dir
          # Optional: Validate directory path
-         if [ -d "$file_dir" ]; then
-           break
-         fi
+          if [ ! -d "$file_dir" ]; then
+            echo "Directory '$file_dir' doesn't exist. Create it? (y/N)"
+            read -r create_dir
+            if [[ $create_dir =~ ^[Yy]$ ]]; then
+              mkdir -p "~/share/'$file_dir'"  # -p creates parent directories if needed
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+                break
+              else
+                echo "Failed to create directory."
+              fi
+            fi
+          fi
          echo "Invalid directory path. Please enter a valid directory."
        done
        path="$file_dir"
