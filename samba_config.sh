@@ -14,8 +14,8 @@ is_samba_installed() {
 }
 
 # Check if Samba is installed before proceeding
-if ! is_samba_installed; then
-  echo "Error: Samba is not installed. Do you want to reinstall again(y/N): "
+if is_samba_installed; then
+  echo "Samba is installed. Do you want to reinstall again(y/N): "
   read -r reinstall 
   if [[ "$reinstall" =~ ^[Yy]$ ]]; then
     # Install Samba and additional tools (adjust as required)
@@ -46,8 +46,11 @@ fi
 echo "Creating smb.conf"
 sudo touch /etc/samba/smb.conf
 
-# Minimum recommended configuration for a secure share (adjust as needed)
-sudo cat << EOF >> /etc/samba/smb.conf
+# Create a temporary file for the configuration
+temp_file=$(mktemp /tmp/samba_config.XXXXXX)
+
+# Write the configuration to the temporary file
+cat << EOF >> "$temp_file"
 [global]
   workgroup = Group
   security = user
@@ -58,7 +61,12 @@ sudo cat << EOF >> /etc/samba/smb.conf
   include = /etc/samba/shares.conf
   # Uncomment and set a strong password for security
   # security = share
+  # map to guest = bad user
 EOF
+
+# Use sudo to copy the temporary file with correct permissions
+sudo cp -p "$temp_file" /etc/samba/smb.conf
+
 
 # Important: User Input Loop for Multiple Shares
 # User Input Loop for Multiple Shares
