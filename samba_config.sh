@@ -106,11 +106,12 @@ while true; do
          echo "Enter the name for this file:"
          read -r file_dir
          # Optional: Validate directory path
-          if [ ! -d "$file_dir" ]; then
-            echo "Directory '$file_dir' doesn't exist. Create it? (y/N)"
+          if [ ! -d /"$file_dir" ]; then
+            echo "Directory /share/'$file_dir' doesn't exist. Create it? (y/N)"
             read -r create_dir
             if [[ $create_dir =~ ^[Yy]$ ]]; then
-              sudo mkdir -p "~/share/'$file_dir'"  # -p creates parent directories if needed
+              sudo mkdir -p "/share/'$file_dir'"  # -p creates parent directories if needed
+              file_dir="/share/'$file_dir"
               if [ $? -eq 0 ]; then
                 echo "Directory created successfully."
                 break
