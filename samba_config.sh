@@ -21,8 +21,7 @@ if ! is_samba_installed; then
     # Install Samba and additional tools (adjust as required)
     sudo apt install samba samba-common-tools
     break
-  else
-  exit 1
+  fi
 else
   # Install Samba and additional tools (adjust as required)
   sudo apt install samba samba-common-tools
