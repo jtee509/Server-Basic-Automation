@@ -106,7 +106,7 @@ while true; do
          echo "Enter the name for this file:"
          read -r file_dir
          # Optional: Validate directory path
-          if [ ! -d /"$file_dir" ]; then
+          if [ ! -d "/'$file_dir'" ]; then
             echo "Directory /share/'$file_dir' doesn't exist. Create it? (y/N)"
             read -r create_dir
             if [[ $create_dir =~ ^[Yy]$ ]]; then
