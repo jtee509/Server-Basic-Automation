@@ -8,8 +8,26 @@
 # Update package lists (adjust for your package manager if needed)
 sudo apt update
 
-# Install Samba and additional tools (adjust as required)
-sudo apt install samba samba-common-tools
+# Function to check if Samba is installed
+is_samba_installed() {
+  command -v smbd >/dev/null 2>&1
+}
+
+# Check if Samba is installed before proceeding
+if ! is_samba_installed; then
+  echo "Error: Samba is not installed. Do you want to reinstall again(y/N): "
+  read -r reinstall 
+  if [[ "$reinstall" =~ ^[Yy]$ ]]; then
+    # Install Samba and additional tools (adjust as required)
+    sudo apt install samba samba-common-tools
+    break
+  else
+  exit 1
+else
+  # Install Samba and additional tools (adjust as required)
+  sudo apt install samba samba-common-tools
+fi
+
 
 sudo mkdir /etc/samba
 
@@ -41,7 +59,6 @@ sudo cat << EOF >> /etc/samba/smb.conf
   include = /etc/samba/shares.conf
   # Uncomment and set a strong password for security
   # security = share
-  # map to guest = bad user
 EOF
 
 # Important: User Input Loop for Multiple Shares
@@ -86,7 +103,7 @@ while true; do
             echo "Directory '$file_dir' doesn't exist. Create it? (y/N)"
             read -r create_dir
             if [[ $create_dir =~ ^[Yy]$ ]]; then
-              mkdir -p "~/share/'$file_dir'"  # -p creates parent directories if needed
+              sudo mkdir -p "~/share/'$file_dir'"  # -p creates parent directories if needed
               if [ $? -eq 0 ]; then
                 echo "Directory created successfully."
                 break
