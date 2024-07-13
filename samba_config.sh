@@ -188,7 +188,11 @@ for example 'parent_folder/sub_folder' :"
     ;;
   esac
   
-  sudo cat << EOF >> /etc/samba/shares.conf
+  # Create a temporary file for the configuration
+  temp_file=$(mktemp /tmp/samba_config.XXXXXX)
+
+  # Write the configuration to the temporary file
+  cat << EOF >> "$temp_file" 
 [$share_name]
   path = $path
   force user = smbuser
@@ -208,7 +212,8 @@ for example 'parent_folder/sub_folder' :"
   # encrypt passwords = yes
   # Add additional share definitions and options here
 EOF 
-
+  # Use sudo to copy the temporary file with correct permissions
+  sudo cp -p "$temp_file"/etc/samba/shares.conf
   path2+=($path)
    # Increment counter for share naming
   ((num_shares++))
