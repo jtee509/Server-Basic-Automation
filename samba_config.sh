@@ -213,6 +213,15 @@ EOF
   ((num_shares++))
 done
 
+sudo groupadd --system smbgroup 
+
+sudo useradd --system -no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
+
+for i in "${path2[@]}"; do 
+   # Set ownership and permissions for the share directory (adjust as needed)
+   sudo chown root:smbgroup "$i"
+   sudo chmod 750 "$i"
+done
 
 
 # Restart Samba
