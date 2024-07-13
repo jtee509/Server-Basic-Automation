@@ -16,7 +16,8 @@ sudo apt update
 
 # Function to check if Samba is installed
 is_samba_installed() {
-  command -v smbd >/dev/null 2>&1
+  dpkg-query -l samba samba-common-tools >/dev/null 2>&1
+  return $?
 }
 
 # Check if Samba is installed before proceeding
