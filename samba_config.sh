@@ -4,6 +4,12 @@
 # Ubuntu Server 24.04
 # Debian Based Distro
 
+clear
+
+echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
+echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
+echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
+echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
 # Update package lists (adjust for your package manager if needed)
 sudo apt update
@@ -68,144 +74,149 @@ EOF
 sudo cp -p "$temp_file" /etc/samba/smb.conf
 
 
-# Important: User Input Loop for Multiple Shares
-# User Input Loop for Multiple Shares
-path2=()
+sudo touch /etc/samba/shares.conf
+
+
 num_shares=0
+
+
 while true; do
-   # User Input for File Type and Permissions
-   file_type=""
-   write_access="yes"
+  echo "
+  
+  "
+  echo "
+  
+What type of file would you like to create :
+  1 - Default Public (Read and Write access for all)
+  2 - Default Private (Read only for users)
+  3 - Custom File (custom files)
+  4 - Quit
 
-   echo "What type of file would you like to create (1 - public, 2 - private, 3 - other)? (enter 'done' to finish)"
-   read -r file_type
+Type select the "
 
-   if [[ "$file_type" == "done" ]]; then
+  read -r file_type
+
+  if [[ "$file_type" == "done" ]]; then
      break
-   fi
+  fi
 
-   while true; do
-     echo "Do you want to allow write access to this file (y/n)?"
-     read -r write_access1
-     if [[ "$write_access1" =~ ^[Yy]$ ]]; then
-       write_access="yes"
-       break
-     else
-       write_access="no"
-     fi
-     echo "Invalid input. Please enter 1 (y) or 2 (N)."
-   done
+  case $file_type in
+    1)
+      echo "Enter the default public sharename (to keep 'Public_(with a number)' as a default name press Enter): "
+      read -r sharename
 
-   case $file_type in
-     1)
-       share_name="Public_File_$((num_shares + 1))"
-       public="yes"
-       writeable="$write_access"
-       # Prompt for directory path for public files
-       while true; do
-         echo "Enter the name for this file:"
-         read -r file_dir
-         # Optional: Validate directory path
-          if [ ! -d "/'$file_dir'" ]; then
-            echo "Directory /share/'$file_dir' doesn't exist. Create it? (y/N)"
-            read -r create_dir
-            if [[ $create_dir =~ ^[Yy]$ ]]; then
-              sudo mkdir -p "/share/'$file_dir'"  # -p creates parent directories if needed
-              file_dir="/share/'$file_dir"
-              if [ $? -eq 0 ]; then
-                echo "Directory created successfully."
-                break
-              else
-                echo "Failed to create directory."
+      # Check if filename is empty or only contains whitespace
+      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+        sharename="Public_File_$((num_shares + 1))"
+      fi
+
+      public="yes"
+      writeable="$write_access"
+      
+      echo "The file name will be stored by default under parent folder '/share'"
+      echo "Do you want to change the main directory (y/N):"
+      read -r options
+      
+      if [["$options" =~ ^[Yy]$ ]]; then
+        while true; then
+          echo "Enter the parent folder if there is a subfolder add a '/' next to it
+for example 'parent_folder/sub_folder' :"
+          read -r file_dir
+        
+          echo "The file name will be shared by default under parent folder is /'$file_dir'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            while true
+              echo "Enter the name for this file:"
+              read -r filename
+              
+              file="/'$filechange'/'$filename'"
+              echo "The entire directory is under this '$file'"
+              echo "Confirm the change? (y/N):"
+              read -r filechange
+
+              if [[ "$filechange" =~ ^[Yy]$ ]]; then
+                  break
               fi
-            fi
+            done
+            
+            break
+          
+          fi        
+        done
+      else
+        while true
+          echo "Enter the name for this file:"
+          read -r filename
+          
+          file="/share/'$filename'"
+          echo "The entire directory is under this '$file'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+              break
           fi
-         echo "Invalid directory path. Please enter a valid directory."
-       done
-       path="$file_dir"
-       ;;
-     2)
-       share_name="Private_File_$((num_shares + 1))"
-       public="no"
-       writeable="no"
-       # Prompt for directory path for private files
-       while true; do
-         echo "Enter the directory path for this private file (absolute path recommended):"
-         read -r file_dir
-         # Optional: Validate directory path
-         if [ -d "$file_dir" ]; then
-           break
-         fi
-         echo "Invalid directory path. Please enter a valid directory."
-       done
-       path="$file_dir"
-       ;;
-     *)
-       # Handle other file types (optional)
-       echo "Unsupported file type. Please choose 1 (public) or 2 (private)."
-       continue
-       ;;
-   esac
+        done
+       
+      fi
+      path="$file_dir"
+      if [ ! -d "/'$file'" ]; then          
+        echo "Directory'$file' doesn't exist. Create it? (y/N)"
+        if [[ $create_dir =~ ^[Yy]$ ]]; then
+          sudo mkdir -p $file  # -p creates parent directories if needed
+          if [ $? -eq 0 ]; then
+            echo "Directory created successfully."
+            break
+          else
+            echo "Failed to create directory."
+          fi
+        fi
+      fi 
+    ;;
 
-   sudo mkdir -p $path
+    2)
+    ;;
 
-   # Write Share Configuration to File
-   sudo cat << EOF >> /etc/samba/shares.conf
-      [$share_name]
-        path = $path
-        force user = smbuser
-        force group = smbgroup
-        browseable = yes
-        read only = no
-        create mask = 0664 
-        force create mode = 0664 
-        directory mask = 0775 #new created files will have read and write
-        force directory mode = 0775
+    3)
+    ;;
 
-        # Adjust permissions based on write access choice
-        writeable = $writeable
+    *)
+    ;;
+  esac
+  
+  sudo cat << EOF >> /etc/samba/shares.conf
+[$share_name]
+  path = $path
+  force user = smbuser
+  force group = smbgroup
+  browseable = yes
+  read only = no
+  create mask = 0664 
+  force create mode = 0664 
+  directory mask = 0775 #new created files will have read and write
+  force directory mode = 0775
 
-        public = $public
-        # Uncomment for encrypted communication (recommended)
-        # encrypt passwords = yes
-      # Add additional share definitions and options here
-EOF
-   path2+=($path)
+  # Adjust permissions based on write access choice
+  writeable = $writeable
+
+  public = $public
+  # Uncomment for encrypted communication (recommended)
+  # encrypt passwords = yes
+  # Add additional share definitions and options here
+EOF 
+
+  path2+=($path)
    # Increment counter for share naming
   ((num_shares++))
 done
 
-sudo groupadd --system smbgroup 
-
-sudo useradd --system -no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
-
-for i in "${path2[@]}"; do 
-   # Set ownership and permissions for the share directory (adjust as needed)
-   sudo chown root:smbgroup "$i"
-   sudo chmod 750 "$i"
-done
 
 
-# Restart Samba services to apply the configuration
-sudo systemctl restart smb nmb
-echo "Samba installation and basic configuration complete."
-echo ""
-
-echo "Shares Folder :
-"
-
-ls -l /share
-
-# Print shares.conf contents
-echo "** Contents of /etc/samba/shares.conf **"
-sudo cat /etc/samba/shares.conf
-
-# Print list of shared files (assuming directory listing works)
-echo "** List of Shared Files **"
-for share in $(cat /etc/samba/shares.conf | grep -oP '(?<=path = ).*'); do
-  if [ -d "$share" ]; then
-    ls -l "$share"
-  else
-    echo "Skipping: $share (not a directory)"
-  fi
-done
+# Restart Samba
+sudo systemctl restart smbd
+sudo systemctl enable smbd
+sudo systemctl restart nmbd
+sudo systemctl enable nmbd
