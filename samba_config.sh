@@ -118,7 +118,7 @@ Type select the "
       read -r options
       
       if [["$options" =~ ^[Yy]$ ]]; then
-        while true; then
+        while true; do
           echo "Enter the parent folder if there is a subfolder add a '/' next to it
 for example 'parent_folder/sub_folder' :"
           read -r file_dir
@@ -128,7 +128,7 @@ for example 'parent_folder/sub_folder' :"
           read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
-            while true
+            while true; do
               echo "Enter the name for this file:"
               read -r filename
               
@@ -147,7 +147,7 @@ for example 'parent_folder/sub_folder' :"
           fi        
         done
       else
-        while true
+        while true; do
           echo "Enter the name for this file:"
           read -r filename
           
