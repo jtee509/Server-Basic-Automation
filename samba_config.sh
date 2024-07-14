@@ -80,6 +80,7 @@ sudo touch /etc/samba/shares.conf
 
 num_shares=0
 temp_file_count=0
+path2=()
 
 while true; do
   echo "
@@ -188,12 +189,12 @@ for example 'parent_folder/sub_folder' :"
     ;;
   esac
   
-  # Create a temporary file for the configuration
-      temp_file="temp_share_config_$temp_file_count"
-    
+# Create a temporary file for the configuration
+temp_file="temp_share_config_$temp_file_count"
+  
 
-  # Write the configuration to the temporary file
-  cat << EOF > "$temp_file"
+# Write the configuration to the temporary file
+cat << EOF > "$temp_file"
 [$share_name]
   path = $path
   force user = smbuser
