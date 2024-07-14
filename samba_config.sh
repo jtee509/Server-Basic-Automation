@@ -82,7 +82,7 @@ num_shares=0
 temp_file_count=0
 path2=()
 # Create a temporary file for the configuration
-temp_file1=$(mktemp /tmp/samba_config.XXXXXX)
+temp_file="temp_share_config_$temp_file_count"
 
 while true; do
   echo "
