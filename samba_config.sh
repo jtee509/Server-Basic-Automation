@@ -128,7 +128,7 @@ if there is a subfolder add a '/' next to it
 for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':"
           read -r file_dir
         
-          echo "The file name will be shared by default under parent folder is '/$file_dir'"
+          echo "The file name will be shared by default folder is '/$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
@@ -160,11 +160,11 @@ for example 'share/sub_folder/share_folder' or 'share/share_folder':"
       path="$file_dir"
       
       #checking if the directory exist or not
-      if [ ! -d "/'$filedir'" ]; then          
-        echo "Directory'$filedir' doesn't exist. Create it? (y/N)"
+      if [ ! -d "/'$file_dir'" ]; then          
+        echo "Directory'$file_dir' doesn't exist. Create it? (y/N)"
         read create_dir
         if [[ $create_dir =~ ^[Yy]$ ]]; then
-          sudo mkdir -p $filedir  # -p creates parent directories if needed
+          sudo mkdir -p $file_dir  # -p creates parent directories if needed
           if [ $? -eq 0 ]; then
             echo "Directory created successfully."
             break
