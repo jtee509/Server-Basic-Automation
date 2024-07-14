@@ -191,8 +191,7 @@ for example 'parent_folder/sub_folder' :"
     ;;
   esac
 
-# Write the configuration to the temporary file
-cat << EOF > "$temp_file1"
+cat > "$temp_file" << EOF
 [$share_name]
   path = $path
   force user = smbuser
@@ -211,7 +210,7 @@ cat << EOF > "$temp_file1"
   # Uncomment for encrypted communication (recommended)
   # encrypt passwords = yes
   # Add additional share definitions and options here
-EOF 
+EOF
 
   path2+=($path)
    # Increment counter for share naming
