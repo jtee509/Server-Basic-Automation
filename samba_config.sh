@@ -123,36 +123,25 @@ Choose an option :"
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
-          echo "Enter the parent folder if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder' :"
+          echo "Enter the parent folder with the share folder 
+if there is a subfolder add a '/' next to it
+for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':"
           read -r file_dir
         
           echo "The file name will be shared by default under parent folder is '/$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
-          if [[ "$filechange" =~ ^[Yy]$ ]]; then
-            while true; do
-              echo "Enter the name for this file:"
-              read -r filename
-              
-              file="/$file_dir/$filename"
-              echo "The entire directory is under this '$file'"
-              echo "Confirm the change? (y/N):"
-              read -r filechange
-
-              if [[ "$filechange" =~ ^[Yy]$ ]]; then
-                  break
-              fi
-            done
-            
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
-          
           fi        
         done
       else
         while true; do
-          echo "Enter the name for this file you want to share:"
+          echo "Enter the name for this file you want to share under '/share' parent directory
+if there is a subfolder add a '/' next to it
+for example 'share/sub_folder/share_folder' or 'share/share_folder':"
+          
           read -r filename
           
           file="/share/'$filename'"
