@@ -125,10 +125,10 @@ Choose an option :"
         while true; do
           echo "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':"
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':"
           read -r file_dir
         
-          echo "The file name will be shared by default folder is '/$file_dir'"
+          echo "The file name will be shared by default folder is '$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
@@ -140,12 +140,12 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
         while true; do
           echo "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
-for example 'share/sub_folder/share_folder' or 'share/share_folder':"
+example input '/sub_folder/share_folder' or '/share_folder':"
           
           read -r filename
           
-          filedir="/share/'$filename'"
-          echo "The entire directory is under this '$filedir'"
+          file_dir="/share/'$filename'"
+          echo "The entire directory is under this '$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
@@ -212,7 +212,7 @@ EOF
 done
 
 # Use sudo to copy the temporary file with correct permissions
-sudo cp -p "$temp_file"/etc/samba/shares.conf
+sudo cp -p "$temp_file" /etc/samba/shares.conf
 
 sudo groupadd --system smbgroup 
 
