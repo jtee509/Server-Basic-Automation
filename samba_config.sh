@@ -136,8 +136,8 @@ for example 'parent_folder/sub_folder' :"
               echo "Enter the name for this file:"
               read -r filename
               
-              file="/'$file_dir'/'$filenamn
-              e'"
+              file="/'$file_dir'/'$filename'
+              "
               echo "The entire directory is under this '$file'"
               echo "Confirm the change? (y/N):"
               read -r filechange
