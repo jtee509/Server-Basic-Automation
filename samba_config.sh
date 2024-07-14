@@ -20,18 +20,17 @@ is_samba_installed() {
   return $?
 }
 
-# Check if Samba is installed before proceeding
+# Check if Samba is installed
 if is_samba_installed; then
   echo "Samba is installed. Do you want to reinstall again(y/N): "
-  read -r reinstall 
+  read -r reinstall
   if [[ "$reinstall" =~ ^[Yy]$ ]]; then
     # Install Samba and additional tools (adjust as required)
-    sudo apt install samba samba-common-tools
-    break
+    sudo apt install -y samba samba-common-tools
   fi
 else
   # Install Samba and additional tools (adjust as required)
-  sudo apt install samba samba-common-tools
+  sudo apt install -y samba samba-common-tools
 fi
 
 
@@ -144,7 +143,7 @@ example input '/sub_folder/share_folder' or '/share_folder':"
           
           read -r filename
           
-          file_dir="/share/'$filename'"
+          file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
@@ -160,11 +159,11 @@ example input '/sub_folder/share_folder' or '/share_folder':"
       path="$file_dir"
       
       #checking if the directory exist or not
-      if [ ! -d "/'$file_dir'" ]; then          
-        echo "Directory'$file_dir' doesn't exist. Create it? (y/N)"
+      if [ ! -d "~/'$file_dir'" ]; then          
+        echo "Directory'~/$file_dir' doesn't exist. Create it? (y/N)"
         read create_dir
         if [[ $create_dir =~ ^[Yy]$ ]]; then
-          sudo mkdir -p $file_dir  # -p creates parent directories if needed
+          sudo mkdir -p "~/"$file_dir  # -p creates parent directories if needed
           if [ $? -eq 0 ]; then
             echo "Directory created successfully."
             break
@@ -216,7 +215,7 @@ sudo cp -p "$temp_file" /etc/samba/shares.conf
 
 sudo groupadd --system smbgroup 
 
-sudo useradd --system -no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
+sudo useradd --system --no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
 
 for i in "${path2[@]}"; do 
    # Set ownership and permissions for the share directory (adjust as needed)
