@@ -136,7 +136,8 @@ for example 'parent_folder/sub_folder' :"
               echo "Enter the name for this file:"
               read -r filename
               
-              file="/'$filechange'/'$filename'"
+              file="/'$file_dir'/'$filenamn
+              e'"
               echo "The entire directory is under this '$file'"
               echo "Confirm the change? (y/N):"
               read -r filechange
@@ -152,7 +153,7 @@ for example 'parent_folder/sub_folder' :"
         done
       else
         while true; do
-          echo "Enter the name for this file:"
+          echo "Enter the name for this file you want to share:"
           read -r filename
           
           file="/share/'$filename'"
@@ -166,7 +167,11 @@ for example 'parent_folder/sub_folder' :"
         done
        
       fi
+
+      #marking the path directory
       path="$file_dir"
+      
+      #checking if the directory exist or not
       if [ ! -d "/'$file'" ]; then          
         echo "Directory'$file' doesn't exist. Create it? (y/N)"
         if [[ $create_dir =~ ^[Yy]$ ]]; then
