@@ -96,7 +96,7 @@ What type of file would you like to create :
   3 - Custom File (custom files)
   4 - Quit
 
-Type select the "
+Choose an option :"
 
   read -r file_type
 
@@ -118,10 +118,10 @@ Type select the "
       writeable="$write_access"
       
       echo "The file name will be stored by default under parent folder '/share'"
-      echo "Do you want to change the main directory (y/N):"
+      echo "Do you want to change the main parent directory (y/N):"
       read -r options
       
-      if [["$options" =~ ^[Yy]$ ]]; then
+      if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
           echo "Enter the parent folder if there is a subfolder add a '/' next to it
 for example 'parent_folder/sub_folder' :"
