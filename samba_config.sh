@@ -127,7 +127,7 @@ Choose an option :"
 for example 'parent_folder/sub_folder' :"
           read -r file_dir
         
-          echo "The file name will be shared by default under parent folder is /'$file_dir'"
+          echo "The file name will be shared by default under parent folder is '/$file_dir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
@@ -136,8 +136,7 @@ for example 'parent_folder/sub_folder' :"
               echo "Enter the name for this file:"
               read -r filename
               
-              file="/$file_dir/$filename
-              "
+              file="/$file_dir/$filename"
               echo "The entire directory is under this '$file'"
               echo "Confirm the change? (y/N):"
               read -r filechange
@@ -174,6 +173,7 @@ for example 'parent_folder/sub_folder' :"
       #checking if the directory exist or not
       if [ ! -d "/'$file'" ]; then          
         echo "Directory'$file' doesn't exist. Create it? (y/N)"
+        read create_dir
         if [[ $create_dir =~ ^[Yy]$ ]]; then
           sudo mkdir -p $file  # -p creates parent directories if needed
           if [ $? -eq 0 ]; then
