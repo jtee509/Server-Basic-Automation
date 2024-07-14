@@ -50,7 +50,10 @@ if [ -f /etc/samba/smb.conf ]; then
 fi
 
 # Create a basic Samba configuration file (/etc/samba/smb.conf)
-echo "Creating smb.conf"
+echo "
+
+Creating smb.conf
+"
 sudo touch /etc/samba/smb.conf
 
 # Create a temporary file for the configuration
@@ -85,9 +88,6 @@ path2=()
 temp_file="temp_share_config_$temp_file_count"
 
 while true; do
-  echo "
-  
-  "
   echo "
   
 What type of file would you like to create :
@@ -136,7 +136,7 @@ for example 'parent_folder/sub_folder' :"
               echo "Enter the name for this file:"
               read -r filename
               
-              file="/'$file_dir'/'$filename'
+              file="/$file_dir/$filename
               "
               echo "The entire directory is under this '$file'"
               echo "Confirm the change? (y/N):"
