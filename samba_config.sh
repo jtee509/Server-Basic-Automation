@@ -144,8 +144,8 @@ for example 'share/sub_folder/share_folder' or 'share/share_folder':"
           
           read -r filename
           
-          file="/share/'$filename'"
-          echo "The entire directory is under this '$file'"
+          filedir="/share/'$filename'"
+          echo "The entire directory is under this '$filedir'"
           echo "Confirm the change? (y/N):"
           read -r filechange
 
@@ -160,11 +160,11 @@ for example 'share/sub_folder/share_folder' or 'share/share_folder':"
       path="$file_dir"
       
       #checking if the directory exist or not
-      if [ ! -d "/'$file'" ]; then          
-        echo "Directory'$file' doesn't exist. Create it? (y/N)"
+      if [ ! -d "/'$filedir'" ]; then          
+        echo "Directory'$filedir' doesn't exist. Create it? (y/N)"
         read create_dir
         if [[ $create_dir =~ ^[Yy]$ ]]; then
-          sudo mkdir -p $file  # -p creates parent directories if needed
+          sudo mkdir -p $filedir  # -p creates parent directories if needed
           if [ $? -eq 0 ]; then
             echo "Directory created successfully."
             break
