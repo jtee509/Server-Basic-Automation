@@ -149,29 +149,21 @@ example input '/sub_folder/share_folder' or '/share_folder':"
           read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
-              break
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+                break
+              else
+                echo "Failed to create directory."
+              fi
+            fi
           fi
         done
        
       fi
-
       #marking the path directory
       path="$file_dir"
-      
-      #checking if the directory exist or not
-      if [ ! -d "~/'$file_dir'" ]; then          
-        echo "Directory'~/$file_dir' doesn't exist. Create it? (y/N)"
-        read create_dir
-        if [[ $create_dir =~ ^[Yy]$ ]]; then
-          sudo mkdir -p "~/"$file_dir  # -p creates parent directories if needed
-          if [ $? -eq 0 ]; then
-            echo "Directory created successfully."
-            break
-          else
-            echo "Failed to create directory."
-          fi
-        fi
-      fi 
     ;;
 
     2)
