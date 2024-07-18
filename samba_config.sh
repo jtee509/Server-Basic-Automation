@@ -294,7 +294,7 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
       echo "Do you want it to be public (Y/n): " 
       read -r publicChoice
       
-      if [["$publicChoice" =~ ^[Nn]$ ]]; then
+      if [[ $publicChoice =~ ^[Nn]$ ]]; then
         public="no"
       else
         public="yes"
@@ -303,7 +303,7 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
       echo "Do you want it to be writable (Y/n): " 
       read -r writeChoice
 
-      if [["$writeChoice" =~ ^[Nn]$ ]]; then
+      if [[ $writeChoice =~ ^[Nn]$ ]]; then
         writeable="no"
       else
         writeable="yes"
