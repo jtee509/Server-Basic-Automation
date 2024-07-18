@@ -383,7 +383,7 @@ EOF
 done
 
 # Use sudo to copy the temporary file with correct permissions
-sudo cp -p "$temp_file" /etc/samba/shares.conf
+sudo cp -p "$temp_file1" /etc/samba/shares.conf
 
 # User and group names
 user_name="smbuser"
