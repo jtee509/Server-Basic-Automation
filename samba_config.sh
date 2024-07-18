@@ -148,16 +148,31 @@ temp_file1=$(mktemp /tmp/samba_config2.XXXXXX)
 
 while true; do
   echo "
-The Default User : smbuser
-The Default SMB : Group
+Samba will be configured manually in custom here are a few selections
+that you can select. You can modify the following file configurations
+as for each of the share types you created:
+-read 
+-public
+-share name
+-write
+-file location
+
+This few options has 2 default configuration and 1 custom files
+you may pick which one you would like to create.
+
+The global configuration has been imposed on a seperate file :
+'/etc/samba/smb.conf'
+
+The current configuration will be under this file:
+'/etc/samba/shares.conf'
   
 What type of file would you like to create :
   1 - Default Public (Read and Write access for all)
   2 - Default Private (Read only for all)
   3 - Custom File (custom files)
-  4 - Quit
+ 
 "
-  read -r -p "Choose an option : " file_type
+  read -r -p "Choose an option (to quit press '4'): " file_type
    
 
   if [[ "$file_type" == "4" ]]; then
@@ -356,6 +371,7 @@ example input 'sub_folder/share_folder' or '/share_folder': " filename
 
   # Write configuration for this share to the temporary file
 cat << EOF >> "$temp_file1"
+
 [$sharename]
   path = $path
   force user = smbuser
@@ -379,6 +395,7 @@ EOF
   path2+=($path)
    # Increment counter for share naming
   ((num_shares++))
+  clear
 done
 
 # Use sudo to copy the temporary file with correct permissions
@@ -407,13 +424,26 @@ echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
 echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
-echo "Here is the configuration."
+echo "
 
-echo "/etc/samba/smb.conf file output : "
+Here is the configuration. 
+You may reconfigure on later if you do want to editing the file below
+using the 'sudo nano' commmand.
+
+NOTICE : 
+All the files within the configuration are under ROOT ownership.
+DO NOT change the ownership!! 
+"
+
+echo "/etc/samba/smb.conf file output : 
+
+"
 
 sudo cat /etc/samba/smb.conf
 
-echo "/etc/samba/shares.conf file output : "
+echo "/etc/samba/shares.conf file output : 
+
+"
 
 sudo cat /etc/samba/shares.conf
 
@@ -423,9 +453,6 @@ for i in "${path2[@]}"; do
    sudo chmod 750 "$i"
 done
 
-
 # Restart Samba
 sudo systemctl restart smbd
-sudo systemctl enable smbd
 sudo systemctl restart nmbd
-sudo systemctl enable nmbd
