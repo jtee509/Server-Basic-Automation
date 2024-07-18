@@ -151,8 +151,8 @@ What type of file would you like to create :
   2 - Default Private (Read only for all)
   3 - Custom File (custom files)
   4 - Quit
-
-Choose an option :" file_type
+"
+read -r echo "Choose an option :" file_type
 
   if [[ "$file_type" == "4" ]]; then
      break
