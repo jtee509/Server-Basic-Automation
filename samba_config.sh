@@ -14,25 +14,53 @@ echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 # Update package lists (adjust for your package manager if needed)
 sudo apt update
 
-# Function to check if Samba is installed
-is_samba_installed() {
-  dpkg-query -l samba >/dev/null 2>&1
-  return $?
-}
+#!/bin/bash
 
-# Check if Samba is installed
-if is_samba_installed; then
-  echo "Samba is installed. Do you want to reinstall again(y/N): "
-  read -r reinstall
-  if [[ "$reinstall" =~ ^[Yy]$ ]]; then
-    # Install Samba and additional tools (adjust as required)
-    sudo apt install -y samba samba-common-tools
+# Package names for Samba server and tools
+samba_package="samba"
+samba_tools_package="samba-common-tools"
+
+# Check for existence of Samba packages
+if dpkg query -l $samba_package $samba_tools_package >/dev/null 2>&1; then
+  # Packages are installed
+  echo "Samba and samba-common-tools are already installed."
+  read -r -p "Would you like to reinstall them? (y/N): " reinstall
+
+  if [[ $reinstall =~ ^[Yy]$ ]]; then
+    # User confirms reinstallation
+    echo "Removing existing Samba and samba-common-tools..."
+    sudo apt remove -y $samba_package $samba_tools_package
+
+    if [[ $? -eq 0 ]]; then
+      echo "Reinstalling Samba and samba-common-tools..."
+      sudo apt install -y $samba_package $samba_tools_package
+
+      if [[ $? -eq 0 ]]; then
+        echo "Samba and samba-common-tools successfully reinstalled."
+      else
+        echo "Error: Reinstallation failed."
+        exit 1
+      fi
+    else
+      echo "Error: Removal failed."
+      exit 1
+    fi
+  else
+    echo "Samba and samba-common-tools will remain installed."
   fi
 else
-  # Install Samba and additional tools (adjust as required)
-  sudo apt install -y samba samba-common-tools
-fi
+  # Packages are not installed
+  echo "Samba and samba-common-tools are not installed."
+  echo "Installing Samba and samba-common-tools..."
+  sudo apt install -y $samba_package $samba_tools_package
 
+  if [[ $? -eq 0 ]]; then
+    echo "Samba and samba-common-tools successfully installed."
+  else
+    echo "Error: Installation failed."
+    exit 1
+  fi
+fi
 
 sudo mkdir /etc/samba
 
@@ -91,7 +119,7 @@ while true; do
   
 What type of file would you like to create :
   1 - Default Public (Read and Write access for all)
-  2 - Default Private (Read only for users)
+  2 - Default Private (Read only for all)
   3 - Custom File (custom files)
   4 - Quit
 
@@ -99,7 +127,7 @@ Choose an option :"
 
   read -r file_type
 
-  if [[ "$file_type" == "done" ]]; then
+  if [[ "$file_type" == "4" ]]; then
      break
   fi
 
@@ -114,7 +142,7 @@ Choose an option :"
       fi
 
       public="yes"
-      writeable="$write_access"
+      writeable="yes"
       
       echo "The file name will be stored by default under parent folder '/share'"
       echo "Do you want to change the main parent directory (y/N):"
@@ -167,9 +195,142 @@ example input '/sub_folder/share_folder' or '/share_folder':"
     ;;
 
     2)
+      echo "Enter the default private sharename (to keep 'Private_(with a number)' as a default name press Enter): "
+      read -r sharename
+
+      # Check if filename is empty or only contains whitespace
+      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+        sharename="Private_File_$((num_shares + 1))"
+      fi
+
+      public="yes"
+      writeable="no"
+      
+      echo "The file name will be stored by default under parent folder '/share'"
+      echo "Do you want to change the main parent directory (y/N):"
+      read -r options
+      
+      if [[ "$options" =~ ^[Yy]$ ]]; then
+        while true; do
+          echo "Enter the parent folder with the share folder 
+if there is a subfolder add a '/' next to it
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':"
+          read -r file_dir
+        
+          echo "The file name will be shared by default folder is '$file_dir'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
+            break
+          fi        
+        done
+      else
+        while true; do
+          echo "Enter the name for this file you want to share under '/share' parent directory
+if there is a subfolder add a '/' next to it
+example input '/sub_folder/share_folder' or '/share_folder':"
+          
+          read -r filename
+          
+          file_dir="~/share/'$filename'"
+          echo "The entire directory is under this '$file_dir'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+                break
+              else
+                echo "Failed to create directory."
+              fi
+            fi
+          fi
+        done
+       
+      fi
+      #marking the path directory
+      path="$file_dir"
     ;;
 
     3)
+      echo "Enter the default custom sharename (to keep 'Custom_(with a number)' as a default name press Enter): "
+      read -r sharename
+
+      # Check if filename is empty or only contains whitespace
+      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+        sharename="Custom_File_$((num_shares + 1))"
+      fi
+
+      echo "Do you want it to be public (Y/n): "
+      read -r publicChoice
+
+      if [["$publicChoice" =~ ^[Nn]$ ]]; then
+        public="no"
+      else
+        public="yes"
+      fi
+
+      echo "Do you want it to be writable (Y/n): "
+      read -r writeChoice
+
+      if [["$writeChoice" =~ ^[Nn]$ ]]; then
+        writeable="no"
+      else
+        writeable="yes"
+      fi 
+      
+      echo "The file name will be stored by default under parent folder '/share'"
+      echo "Do you want to change the main parent directory (y/N):"
+      read -r options
+      
+      if [[ "$options" =~ ^[Yy]$ ]]; then
+        while true; do
+          echo "Enter the parent folder with the share folder 
+if there is a subfolder add a '/' next to it
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':"
+          read -r file_dir
+        
+          echo "The file name will be shared by default folder is '$file_dir'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
+            break
+          fi        
+        done
+      else
+        while true; do
+          echo "Enter the name for this file you want to share under '/share' parent directory
+if there is a subfolder add a '/' next to it
+example input '/sub_folder/share_folder' or '/share_folder':"
+          
+          read -r filename
+          
+          file_dir="~/share/'$filename'"
+          echo "The entire directory is under this '$file_dir'"
+          echo "Confirm the change? (y/N):"
+          read -r filechange
+
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+                break
+              else
+                echo "Failed to create directory."
+              fi
+            fi
+          fi
+        done
+       
+      fi
+      #marking the path directory
+      path="$file_dir"
     ;;
 
     *)
