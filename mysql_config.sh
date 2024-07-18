@@ -127,12 +127,19 @@ managing_users() {
 
     if [[ $? -eq 0 ]]; then
       echo "
+This current mysql configuration will allow you to add/modify/remove users
+within the current database. Modification of users comes along with modifying
+username and password 
+
+DO NOT remove root. 
+
 These are the list of users: 
 $user_list
 "    
       echo "
 
 $user_count users found.
+Just enter the actions number and then type in the username. 
 "
     fi
 
