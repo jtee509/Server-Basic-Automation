@@ -356,15 +356,16 @@ example input '/sub_folder/share_folder' or '/share_folder':"
     ;;
   esac
 
-cat > "$temp_file1" << EOF
+  # Write configuration for this share to the temporary file
+cat << EOF >> "$temp_file1"
 [$share_name]
   path = $path
   force user = smbuser
   force group = smbgroup
   browseable = yes
   read only = no
-  create mask = 0664 
-  force create mode = 0664 
+  create mask = 0664
+  force create mode = 0664
   directory mask = 0775 #new created files will have read and write
   force directory mode = 0775
 
