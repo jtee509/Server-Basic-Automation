@@ -209,11 +209,11 @@ example input '/sub_folder/share_folder' or '/share_folder':"
               sudo mkdir -p "$file_dir"
               if [ $? -eq 0 ]; then
                 echo "Directory created successfully."
-                break
               else
                 echo "Failed to create directory."
               fi
             fi
+            break
           fi
         done
        
