@@ -201,8 +201,7 @@ example input '/sub_folder/share_folder' or '/share_folder':"
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
@@ -260,19 +259,20 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          read -r -p echo "Confirm the change? (y/N):" filechange
+          read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
               sudo mkdir -p "$file_dir"
               if [ $? -eq 0 ]; then
                 echo "Directory created successfully."
-                break
               else
                 echo "Failed to create directory."
               fi
             fi
+            break
           fi
+
         done
        
       fi
@@ -332,18 +332,18 @@ example input '/sub_folder/share_folder' or '/share_folder':"
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          read -r -p "Confirm the change? (y/N):" filechange
+          read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
               sudo mkdir -p "$file_dir"
               if [ $? -eq 0 ]; then
                 echo "Directory created successfully."
-                break
               else
                 echo "Failed to create directory."
               fi
             fi
+            break
           fi
         done
        
