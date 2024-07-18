@@ -10,6 +10,9 @@ echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
 echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
 echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
+echo "
+
+"
 
 # Update package lists (adjust for your package manager if needed)
 sudo apt update
@@ -70,6 +73,8 @@ echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
 echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
 echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
+echo "
+"
 
 
 # Samba configuration file paths
@@ -173,13 +178,14 @@ What type of file would you like to create :
       writeable="yes"
       
       echo "The file name will be stored by default under parent folder '/share'"
-      read -r -p "Do you want to change the main parent directory (y/N):" options
+      read -r -p "Do you want to change the main parent directory (y/N): " options
+
 
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
           read -r -p "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':" file_dir
+for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': " file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange 
@@ -192,7 +198,7 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
         while true; do
           read -r -p "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
-example input 'sub_folder/share_folder' or 'share_folder':" filename
+example input 'sub_folder/share_folder' or 'share_folder': " filename
           
           file_dir="~/share/$filename"
           echo "The entire directory is under this '$file_dir'"
@@ -229,16 +235,16 @@ example input 'sub_folder/share_folder' or 'share_folder':" filename
       writeable="no"
       
       echo "The file name will be stored by default under parent folder '/share'"
-      read -r -p "Do you want to change the main parent directory (y/N):" options
+      read -r -p "Do you want to change the main parent directory (y/N): " options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
           read -r -p "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':" file_dir
+for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': " file_dir
 
           echo "The file name will be shared by default folder is '$file_dir'"
-          read -r -p "Confirm the change? (y/N):" filechange
+          read -r -p "Confirm the change? (y/N): " filechange
           
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
@@ -249,7 +255,7 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
         while true; do
           read -r -p "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
-example input 'sub_folder/share_folder' or 'share_folder':" filename
+example input 'sub_folder/share_folder' or 'share_folder': " filename
           
           file_dir="~/share/$filename"
           echo "The entire directory is under this '$file_dir'"
@@ -300,17 +306,17 @@ example input 'sub_folder/share_folder' or 'share_folder':" filename
       fi 
       
       echo "The file name will be stored by default under parent folder '/share'"
-      read -r -p "Do you want to change the main parent directory (y/N):" options
+      read -r -p "Do you want to change the main parent directory (y/N): " options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
           echo "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder':"
+for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': "
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          read -r -p "Confirm the change? (y/N):" filechange
+          read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -318,11 +324,9 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
         done
       else
         while true; do
-          echo "Enter the name for this file you want to share under '/share' parent directory
+          read -r -p  "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
-example input 'sub_folder/share_folder' or '/share_folder':"
-          
-          read -r filename
+example input 'sub_folder/share_folder' or '/share_folder': " filename
           
           file_dir="~/share/$filename"
           echo "The entire directory is under this '$file_dir'"
