@@ -72,16 +72,44 @@ echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
 
-if [ -f /etc/samba/smb.conf ]; then
-  sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+
+# Samba configuration file paths
+conf_files=("/etc/samba/shares.conf" "/etc/samba/smb.conf")
+
+# Backup directory (modify as needed)
+backup_dir="/etc/samba/backups"
+
+# Check if backup directory exists
+if [ ! -d "$backup_dir" ]; then
+  echo "Backup directory '$backup_dir' does not exist. Creating it..."
+  sudo mkdir -p "$backup_dir"
 fi
 
-# Create a basic Samba configuration file (/etc/samba/smb.conf)
-echo "
+# Iterate through Samba configuration files
+for conf_file in "${conf_files[@]}"; do
+  # Check if file exists
+  if [ -f "$conf_file" ]; then
+    echo "$conf_file exists."
 
-Creating smb.conf
-"
-sudo touch /etc/samba/smb.conf
+    # Ask for backup confirmation
+    read -r -p "Do you want to back it up (y/N): " backup
+
+    if [[ $backup =~ ^[Yy]$ ]]; then
+      # Create backup with timestamp
+      backup_file="$conf_file.bak-$(date +%Y-%m-%d_%H-%M-%S)"
+      sudo mv "$conf_file" "$backup_file"
+      echo "Backup created: $backup_file"
+
+      # Create a new empty touch file
+      sudo touch "$conf_file"
+      echo "New empty file created: $conf_file"
+    else
+      echo "Skipping backup for $conf_file."
+    fi
+  else
+    echo "$conf_file does not exist."
+  fi
+done
 
 # Create a temporary file for the configuration
 temp_file=$(mktemp /tmp/samba_config.XXXXXX)
@@ -116,6 +144,8 @@ temp_file1=$(mktemp /tmp/samba_config2.XXXXXX)
 
 while true; do
   echo "
+The Default User : smbuser
+The Default SMB : Group
   
 What type of file would you like to create :
   1 - Default Public (Read and Write access for all)
@@ -133,8 +163,7 @@ Choose an option :"
 
   case $file_type in
     1)
-      echo "Enter the default public sharename (to keep 'Public_(with a number)' as a default name press Enter): "
-      read -r sharename
+      read -r echo "Enter the default public sharename (to keep 'Public_(with a number)' as a default name press Enter): " sharename
 
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
@@ -145,8 +174,7 @@ Choose an option :"
       writeable="yes"
       
       echo "The file name will be stored by default under parent folder '/share'"
-      echo "Do you want to change the main parent directory (y/N):"
-      read -r options
+      read -r echo "Do you want to change the main parent directory (y/N):" options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
@@ -156,8 +184,7 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r echo "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -195,8 +222,7 @@ example input '/sub_folder/share_folder' or '/share_folder':"
     ;;
 
     2)
-      echo "Enter the default private sharename (to keep 'Private_(with a number)' as a default name press Enter): "
-      read -r sharename
+      read -r echo "Enter the default private sharename (to keep 'Private_(with a number)' as a default name press Enter): " sharename
 
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
@@ -212,14 +238,12 @@ example input '/sub_folder/share_folder' or '/share_folder':"
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
-          echo "Enter the parent folder with the share folder 
+          read -r echo "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':"
-          read -r file_dir
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':" file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r echo "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -227,16 +251,13 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
         done
       else
         while true; do
-          echo "Enter the name for this file you want to share under '/share' parent directory
+          read -r echo "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
-example input '/sub_folder/share_folder' or '/share_folder':"
-          
-          read -r filename
+example input '/sub_folder/share_folder' or '/share_folder':" filename
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r echo "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
@@ -257,25 +278,22 @@ example input '/sub_folder/share_folder' or '/share_folder':"
     ;;
 
     3)
-      echo "Enter the default custom sharename (to keep 'Custom_(with a number)' as a default name press Enter): "
-      read -r sharename
+      read -r echo "Enter the default custom sharename (to keep 'Custom_(with a number)' as a default name press Enter): " sharename
 
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
         sharename="Custom_File_$((num_shares + 1))"
       fi
 
-      echo "Do you want it to be public (Y/n): "
-      read -r publicChoice
-
+      read -r echo "Do you want it to be public (Y/n): " publicChoice
+      
       if [["$publicChoice" =~ ^[Nn]$ ]]; then
         public="no"
       else
         public="yes"
       fi
 
-      echo "Do you want it to be writable (Y/n): "
-      read -r writeChoice
+      read -r echo "Do you want it to be writable (Y/n): " writeChoice
 
       if [["$writeChoice" =~ ^[Nn]$ ]]; then
         writeable="no"
@@ -284,8 +302,7 @@ example input '/sub_folder/share_folder' or '/share_folder':"
       fi 
       
       echo "The file name will be stored by default under parent folder '/share'"
-      echo "Do you want to change the main parent directory (y/N):"
-      read -r options
+      read -r echo "Do you want to change the main parent directory (y/N):" options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
@@ -366,9 +383,38 @@ done
 # Use sudo to copy the temporary file with correct permissions
 sudo cp -p "$temp_file" /etc/samba/shares.conf
 
-sudo groupadd --system smbgroup 
+# User and group names
+user_name="smbuser"
+group_name="smbgroup"
 
-sudo useradd --system --no-create-home --group smbuser --group smbgroup -s /bin/false smbuser
+# Check for group existence
+if ! getent group $group_name >/dev/null 2>&1; then
+  echo "Group '$group_name' does not exist. Creating it..."
+  sudo groupadd --system $group_name
+fi
+
+# Check for user existence
+if ! id -u $user_name >/dev/null 2>&1; then
+  echo "User '$user_name' does not exist. Creating it..."
+  sudo useradd --system --no-create-home --group $group_name -s /bin/false $user_name
+fi
+
+clear
+
+echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
+echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
+echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
+echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
+
+echo "Here is the configuration."
+
+echo "/etc/samba/smb.conf file output : "
+
+sudo cat /etc/samba/smb.conf
+
+echo "/etc/samba/shares.conf file output : "
+
+sudo cat /etc/samba/shares.conf
 
 for i in "${path2[@]}"; do 
    # Set ownership and permissions for the share directory (adjust as needed)
