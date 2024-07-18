@@ -152,7 +152,8 @@ What type of file would you like to create :
   3 - Custom File (custom files)
   4 - Quit
 "
-  echo "Choose an option :" read -r file_type
+  read -r "Choose an option :" file_type
+   
 
   if [[ "$file_type" == "4" ]]; then
      break
@@ -160,7 +161,8 @@ What type of file would you like to create :
 
   case $file_type in
     1)
-      read -r echo "Enter the default public sharename (to keep 'Public_(with a number)' as a default name press Enter): " sharename
+      echo "Enter the default public sharename (to keep 'Public_(with a number)' as a default name press Enter): " 
+      read -r sharename
 
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
@@ -171,8 +173,9 @@ What type of file would you like to create :
       writeable="yes"
       
       echo "The file name will be stored by default under parent folder '/share'"
-      read -r echo "Do you want to change the main parent directory (y/N):" options
-      
+      echo "Do you want to change the main parent directory (y/N):" 
+      read -r options
+
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
           echo "Enter the parent folder with the share folder 
@@ -181,7 +184,8 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          read -r echo "Confirm the change? (y/N):" filechange
+          echo "Confirm the change? (y/N):" 
+          read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -219,8 +223,9 @@ example input '/sub_folder/share_folder' or '/share_folder':"
     ;;
 
     2)
-      read -r echo "Enter the default private sharename (to keep 'Private_(with a number)' as a default name press Enter): " sharename
-
+      echo "Enter the default private sharename (to keep 'Private_(with a number)' as a default name press Enter): " 
+      read -r sharename
+      
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
         sharename="Private_File_$((num_shares + 1))"
@@ -235,12 +240,14 @@ example input '/sub_folder/share_folder' or '/share_folder':"
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
-          read -r echo "Enter the parent folder with the share folder 
+          echo "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':" file_dir
-        
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':" 
+          read -r file_dir
+
           echo "The file name will be shared by default folder is '$file_dir'"
-          read -r echo "Confirm the change? (y/N):" filechange
+          echo "Confirm the change? (y/N):" 
+          read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -254,7 +261,8 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          read -r echo "Confirm the change? (y/N):" filechange
+          echo "Confirm the change? (y/N):" 
+          read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
@@ -275,14 +283,16 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
     ;;
 
     3)
-      read -r echo "Enter the default custom sharename (to keep 'Custom_(with a number)' as a default name press Enter): " sharename
+      echo "Enter the default custom sharename (to keep 'Custom_(with a number)' as a default name press Enter): " 
+      read -r sharename
 
       # Check if filename is empty or only contains whitespace
       if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
         sharename="Custom_File_$((num_shares + 1))"
       fi
 
-      read -r echo "Do you want it to be public (Y/n): " publicChoice
+      echo "Do you want it to be public (Y/n): " 
+      read -r publicChoice
       
       if [["$publicChoice" =~ ^[Nn]$ ]]; then
         public="no"
@@ -290,7 +300,8 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
         public="yes"
       fi
 
-      read -r echo "Do you want it to be writable (Y/n): " writeChoice
+      echo "Do you want it to be writable (Y/n): " 
+      read -r writeChoice
 
       if [["$writeChoice" =~ ^[Nn]$ ]]; then
         writeable="no"
@@ -299,7 +310,8 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
       fi 
       
       echo "The file name will be stored by default under parent folder '/share'"
-      read -r echo "Do you want to change the main parent directory (y/N):" options
+      echo "Do you want to change the main parent directory (y/N):" 
+      read -r options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
