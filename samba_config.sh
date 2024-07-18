@@ -152,7 +152,7 @@ What type of file would you like to create :
   3 - Custom File (custom files)
   4 - Quit
 "
-  read -r echo "Choose an option :" file_type
+  echo "Choose an option :" read -r file_type
 
   if [[ "$file_type" == "4" ]]; then
      break
