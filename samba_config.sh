@@ -18,7 +18,7 @@ sudo apt update
 
 # Package names for Samba server and tools
 samba_package="samba"
-samba_tools_package="samba-common-tools"
+samba_tools_package="samba-common"
 
 # Check for existence of Samba packages
 if dpkg query -l $samba_package $samba_tools_package >/dev/null 2>&1; then
@@ -70,7 +70,6 @@ echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
 echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
 echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
 echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
-
 
 
 # Samba configuration file paths
