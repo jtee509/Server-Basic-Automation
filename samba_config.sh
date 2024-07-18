@@ -449,7 +449,7 @@ sudo cat /etc/samba/shares.conf
 
 for i in "${path2[@]}"; do 
    # Set ownership and permissions for the share directory (adjust as needed)
-   sudo chown root:smbgroup "$i"
+   sudo chown smbuser:smbgroup "$i"
    sudo chmod 750 "$i"
 done
 
