@@ -152,7 +152,7 @@ What type of file would you like to create :
   3 - Custom File (custom files)
   4 - Quit
 "
-  read -r -p "Choose an option :" file_type
+  read -r -p "Choose an option : " file_type
    
 
   if [[ "$file_type" == "4" ]]; then
@@ -184,7 +184,7 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          echo "Confirm the change? (y/N):" 
+          echo "Confirm the change? (y/N): " 
           read -r filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
