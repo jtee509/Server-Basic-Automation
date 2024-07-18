@@ -240,14 +240,13 @@ example input '/sub_folder/share_folder' or '/share_folder':"
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
-          echo "Enter the parent folder with the share folder 
+          read -r "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':" 
-          read -r file_dir
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder':" file_dir
 
           echo "The file name will be shared by default folder is '$file_dir'"
-          echo "Confirm the change? (y/N):" 
-          read -r filechange
+          read -r -p "Confirm the change? (y/N):" filechange
+          
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -255,14 +254,13 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
         done
       else
         while true; do
-          read -r echo "Enter the name for this file you want to share under '/share' parent directory
+          read -r -p "Enter the name for this file you want to share under '/share' parent directory
 if there is a subfolder add a '/' next to it
 example input '/sub_folder/share_folder' or '/share_folder':" filename
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          echo "Confirm the change? (y/N):" 
-          read -r filechange
+          read -r -p echo "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
@@ -291,17 +289,15 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
         sharename="Custom_File_$((num_shares + 1))"
       fi
 
-      echo "Do you want it to be public (Y/n): " 
-      read -r publicChoice
-      
+      read -r -p "Do you want it to be public (Y/n): " publicChoice
+       
       if [[ $publicChoice =~ ^[Nn]$ ]]; then
         public="no"
       else
         public="yes"
       fi
 
-      echo "Do you want it to be writable (Y/n): " 
-      read -r writeChoice
+      read -r -p "Do you want it to be writable (Y/n): " writeChoice
 
       if [[ $writeChoice =~ ^[Nn]$ ]]; then
         writeable="no"
@@ -310,8 +306,7 @@ example input '/sub_folder/share_folder' or '/share_folder':" filename
       fi 
       
       echo "The file name will be stored by default under parent folder '/share'"
-      echo "Do you want to change the main parent directory (y/N):" 
-      read -r options
+      read -r -p "Do you want to change the main parent directory (y/N):" options
       
       if [[ "$options" =~ ^[Yy]$ ]]; then
         while true; do
@@ -321,8 +316,7 @@ for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_fo
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r -p "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then            
             break
@@ -338,8 +332,7 @@ example input '/sub_folder/share_folder' or '/share_folder':"
           
           file_dir="~/share/'$filename'"
           echo "The entire directory is under this '$file_dir'"
-          echo "Confirm the change? (y/N):"
-          read -r filechange
+          read -r -p "Confirm the change? (y/N):" filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
             if [ ! -d "$file_dir" ]; then
