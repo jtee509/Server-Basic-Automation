@@ -142,7 +142,7 @@ path2=()
 temp_file1=$(mktemp /tmp/samba_config2.XXXXXX)
 
 while true; do
-  echo "
+  read -r echo "
 The Default User : smbuser
 The Default SMB : Group
   
@@ -152,9 +152,7 @@ What type of file would you like to create :
   3 - Custom File (custom files)
   4 - Quit
 
-Choose an option :"
-
-  read -r file_type
+Choose an option :" file_type
 
   if [[ "$file_type" == "4" ]]; then
      break
