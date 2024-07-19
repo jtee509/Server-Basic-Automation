@@ -99,7 +99,7 @@ TWO default file :
 - /etc/samba/shares.conf 
 - /etc/samba/smb.conf
 
-The following file exis
+The following file existed:
 $conf_file "
 
     # Ask for backup confirmation
