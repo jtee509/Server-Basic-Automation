@@ -43,10 +43,11 @@ function process_package() {
 
   # Check for custom configuration script
   local config_script="${CUSTOM_CONFIGS[$index]}"
-  if [[ ! -z "$config_script" ]]; then
+  if [[ ! -z "${CUSTOM_CONFIGS[$index]}" ]]; then
     echo "Running custom configuration for ${SERVICES[$index]%:*}..."
-    ./"$config_script"
+    ./${CUSTOM_CONFIGS[$index]}  # Use shell expansion here
   fi
+
 }
 
 
