@@ -23,6 +23,33 @@ function print_service_list() {
   echo
 }
 
+# Function to process a selected package
+function process_package() {
+  local index=$(( $1 - 1 ))
+  if [[ $index -lt 0 || $index -ge ${#SERVICES[@]} ]]; then
+    echo "Invalid package number: $1"
+    return
+  fi
+
+  echo "Installing: ${SERVICES[$index]}"
+
+  # Install package using apt and capture exit code
+  if sudo apt install "${SERVICES[$index]%:*}" &> /dev/null; then
+    SUCCESSFUL+=("${SERVICES[$index]}")
+  else
+    FAILED+=("${SERVICES[$index]}")
+    echo "  **Failed to install: ${SERVICES[$index]}"
+  fi
+
+  # Check for custom configuration script
+  local config_script="${CUSTOM_CONFIGS[$index]}"
+  if [[ ! -z "$config_script" ]]; then
+    echo "Running custom configuration for ${SERVICES[$index]%:*}..."
+    ./"$config_script"
+  fi
+}
+
+
 # Define an array of services to install
 SERVICES=(
   "apache2"  # Web server
@@ -35,7 +62,6 @@ SERVICES=(
   # Database options
   "postgresql" # Alternative database server (optional)
   "mariadb"    # Another database option (optional)
-  "mysql"      # Original MySQL option (optional)
   # File sharing
   "samba-common"  # Core Samba libraries for file sharing (optional)
   "nfs-kernel-server" # NFS file sharing server (optional)
@@ -58,7 +84,7 @@ SERVICES=(
 
 # Define custom configuration scripts
 CUSTOM_CONFIGS=(
-  "mysql"="mysql_config.sh"
+  "mariadb"="mysql_config.sh"
   "samba"="samba_config.sh"
   "squid"="squid_proxy.sh"
   "apache2"="apache2_install.sh"
@@ -126,35 +152,10 @@ if [[ ${#FAILED[@]} -gt 0 ]]; then
   echo "${FAILED[@]}"
 fi
 
-# Function to process a selected package
-function process_package() {
-  local index=$(( $1 - 1 ))
-  if [[ $index -lt 0 || $index -ge ${#SERVICES[@]} ]]; then
-    echo "Invalid package number: $1"
-    return
-  fi
 
-  echo "Installing: ${SERVICES[$index]}"
+echo "
 
-  # Install package using apt and capture exit code
-  if sudo apt install "${SERVICES[$index]%:*}" &> /dev/null; then
-    SUCCESSFUL+=("${SERVICES[$index]}")
-  else
-    FAILED+=("${SERVICES[$index]}")
-    echo "  **Failed to install: ${SERVICES[$index]}"
-  fi
-
-  # Check for custom configuration script
-  local config_script="${CUSTOM_CONFIGS[$index]}"
-  if [[ ! -z "$config_script" ]]; then
-    echo "Running custom configuration for ${SERVICES[$index]%:*}..."
-    ./"$config_script"
-  fi
-}
-
-
-
-echo "Thank you for using the this automation" 
+Thank you for using the this automation" 
 
 
 
