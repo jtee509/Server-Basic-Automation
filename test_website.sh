@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 sudo apt update -y
 sudo apt upgrade -y
 
@@ -11,29 +10,15 @@ sudo apt install python3-pip -y
 PORT1=8001
 PORT2=8002
 
-# Get the current directory (where the script is located)
-CURRENT_DIR=$(pwd)
+# Define paths to your HTML files
+HTML_FILE1="example1.html"
+HTML_FILE2="example2.html"
 
-# Define paths to HTML files (use relative paths based on current directory)
-HTML1_PATH="$CURRENT_DIR/example1.html"
-HTML2_PATH="$CURRENT_DIR/example2.html"
+# Start servers in the background
+python3 server.py $PORT1 $HTML_FILE1 &
+python3 server.py $PORT2 $HTML_FILE2 &
 
-# Check if both HTML files exist
-if [[ ! -f "$HTML1_PATH" || ! -f "$HTML2_PATH" ]]; then
-  echo "Error: One or both HTML files not found!"
-  exit 1
-fi
-
-# Start serving the first HTML on port $PORT1
-python3 -m http.server -b localhost:$PORT1 $HTML1_HTML &
-PID1=$!  # Capture process ID for first server
-
-# Start serving the second HTML on port $PORT2
-python3 -m http.server -b localhost:$PORT2 $HTML2_PATH &
-PID2=$!  # Capture process ID for second server
-
-# Print confirmation message and instructions
-echo "Serving example1.html on port: $PORT1 (PID: $PID1)"
-echo "Serving example2.html on port: $PORT2 (PID: $PID2)"
-echo "To stop the servers manually, use the following command:"
-echo "kill $PID1 $PID2"
+# Print confirmation message
+echo "Servers started:"
+echo "  - http://localhost:$PORT1 - $HTML_FILE1"
+echo "  - http://localhost:$PORT2 - $HTML_FILE2"
