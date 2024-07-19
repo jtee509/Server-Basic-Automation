@@ -14,6 +14,15 @@ echo "
 
 "
 
+# Define a function to print the service list with numbering
+function print_service_list() {
+  echo "** Available Services **"
+  for ((i=0; i<${#SERVICES[@]}; i++)); do
+    echo "$(($i+1)). ${SERVICES[$i]}"
+  done
+  echo
+}
+
 # Define an array of services to install
 SERVICES=(
   "apache2"  # Web server
@@ -143,14 +152,7 @@ function process_package() {
   fi
 }
 
-# Define a function to print the service list with numbering
-function print_service_list() {
-  echo "** Available Services **"
-  for ((i=0; i<${#SERVICES[@]}; i++)); do
-    echo "$(($i+1)). ${SERVICES[$i]}"
-  done
-  echo
-}
+
 
 echo "Thank you for using the this automation" 
 
