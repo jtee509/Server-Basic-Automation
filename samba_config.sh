@@ -215,14 +215,22 @@ What type of file would you like to create :
         while true; do
           read -r -p "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': " file_dir
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder': " file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange 
 
-          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+              else
+                echo "Failed to create directory."
+              fi
+            fi
             break
-          fi        
+          fi       
         done
       else
         while true; do
@@ -273,15 +281,23 @@ example input 'sub_folder/share_folder' or 'share_folder': " filename
         while true; do
           read -r -p "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': " file_dir
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder': " file_dir
 
           echo "The file name will be shared by default folder is '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange
           
 
-          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+              else
+                echo "Failed to create directory."
+              fi
+            fi
             break
-          fi        
+          fi       
         done
       else
         while true; do
@@ -346,15 +362,23 @@ example input 'sub_folder/share_folder' or 'share_folder': " filename
         while true; do
           echo "Enter the parent folder with the share folder 
 if there is a subfolder add a '/' next to it
-for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_folder': "
+for example '/parent_folder/sub_folder/share_folder' or '/parent_folder/share_folder': "
           read -r file_dir
         
           echo "The file name will be shared by default folder is '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange
 
-          if [[ "$filechange" =~ ^[Yy]$ ]]; then            
+          if [[ "$filechange" =~ ^[Yy]$ ]]; then
+            if [ ! -d "$file_dir" ]; then
+              sudo mkdir -p "$file_dir"
+              if [ $? -eq 0 ]; then
+                echo "Directory created successfully."
+              else
+                echo "Failed to create directory."
+              fi
+            fi
             break
-          fi        
+          fi       
         done
       else
         while true; do
