@@ -25,11 +25,11 @@ if [[ ! -f "$HTML1_PATH" || ! -f "$HTML2_PATH" ]]; then
 fi
 
 # Start serving the first HTML on port $PORT1
-python3 -m http.server $PORT1 $HTML1_HTML &
+python3 -m http.server -b localhost:$PORT1 $HTML1_HTML &
 PID1=$!  # Capture process ID for first server
 
 # Start serving the second HTML on port $PORT2
-python3 -m http.server $PORT2 $HTML2_PATH &
+python3 -m http.server -b localhost:$PORT2 $HTML2_PATH &
 PID2=$!  # Capture process ID for second server
 
 # Print confirmation message and instructions
