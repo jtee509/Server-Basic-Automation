@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Update package lists
-sudo apt update
+sudo apt update -y
+sudo apt upgrade -y
 
 # Install Squid package
 sudo apt install squid -y

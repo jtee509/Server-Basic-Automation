@@ -15,7 +15,8 @@ echo "
 "
 
 # Update package lists (adjust for your package manager if needed)
-sudo apt update
+sudo apt update -y
+sudo apt upgrade -y
 
 #!/bin/bash
 
