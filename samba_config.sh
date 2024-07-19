@@ -93,10 +93,17 @@ fi
 for conf_file in "${conf_files[@]}"; do
   # Check if file exists
   if [ -f "$conf_file" ]; then
-    echo "$conf_file exists."
+    echo "
+The configuration for this SAMBA installation consist of
+TWO default file : 
+- /etc/samba/shares.conf 
+- /etc/samba/smb.conf
+
+The following file exis
+$conf_file "
 
     # Ask for backup confirmation
-    read -r -p "Do you want to back it up (y/N): " backup
+    read -r -p "Do you want to back it up (its recommended that you back it up) (y/N): " backup
 
     if [[ $backup =~ ^[Yy]$ ]]; then
       # Create backup with timestamp
@@ -147,6 +154,14 @@ path2=()
 temp_file1=$(mktemp /tmp/samba_config2.XXXXXX)
 
 while true; do
+  clear
+
+  echo " ____   __   _  _  ____   __      ___  __   __ _  ____  __  ___  "
+  echo "/ ___) / _\ ( \/ )(  _ \ / _\    / __)/  \ (  ( \(  __)(  )/ __) "
+  echo "\___ \/    \/ \/ \ ) _ (/    \  ( (__(  O )/    / ) _)  )(( (_ \ "
+  echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
+  echo "
+  "
   echo "
 Samba will be configured manually in custom here are a few selections
 that you can select. You can modify the following file configurations
@@ -185,7 +200,7 @@ What type of file would you like to create :
       read -r sharename
 
       # Check if filename is empty or only contains whitespace
-      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+      if [[ -z "${sharename}" || -z "${sharename##*[![:space:]]}" ]]; then        
         sharename="Public_File_$((num_shares + 1))"
       fi
 
@@ -215,21 +230,23 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
 if there is a subfolder add a '/' next to it
 example input 'sub_folder/share_folder' or 'share_folder': " filename
           
-          file_dir="~/share/$filename"
+          file_dir="/share/$filename"
           echo "The entire directory is under this '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
-            if [ ! -d "$file_dir" ]; then
-              sudo mkdir -p "$file_dir"
-              if [ $? -eq 0 ]; then
-                echo "Directory created successfully."
+            if sudo -E mkdir -p "$file_dir"; then  # Use `-E` to preserve environment variables
+              echo "Directory created successfully."
+            else
+              if [ $? -eq 13 ]; then  # Check for permission error (code 13)
+                echo "Error: Insufficient permissions to create directory."
               else
                 echo "Failed to create directory."
               fi
             fi
             break
           fi
+
         done
        
       fi
@@ -242,7 +259,7 @@ example input 'sub_folder/share_folder' or 'share_folder': " filename
       read -r sharename
       
       # Check if filename is empty or only contains whitespace
-      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+      if [[ -z "${sharename}" || -z "${sharename##*[![:space:]]}" ]]; then        
         sharename="Private_File_$((num_shares + 1))"
       fi
 
@@ -272,21 +289,23 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
 if there is a subfolder add a '/' next to it
 example input 'sub_folder/share_folder' or 'share_folder': " filename
           
-          file_dir="~/share/$filename"
+          file_dir="/share/$filename"
           echo "The entire directory is under this '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
-            if [ ! -d "$file_dir" ]; then
-              sudo mkdir -p "$file_dir"
-              if [ $? -eq 0 ]; then
-                echo "Directory created successfully."
+            if sudo -E mkdir -p "$file_dir"; then  # Use `-E` to preserve environment variables
+              echo "Directory created successfully."
+            else
+              if [ $? -eq 13 ]; then  # Check for permission error (code 13)
+                echo "Error: Insufficient permissions to create directory."
               else
                 echo "Failed to create directory."
               fi
             fi
             break
           fi
+
 
         done
        
@@ -300,7 +319,7 @@ example input 'sub_folder/share_folder' or 'share_folder': " filename
       read -r sharename
 
       # Check if filename is empty or only contains whitespace
-      if [[ -z "${sharename}" || -z "$(trim <<< "$sharename")" ]]; then
+      if [[ -z "${sharename}" || -z "${sharename##*[![:space:]]}" ]]; then        
         sharename="Custom_File_$((num_shares + 1))"
       fi
 
@@ -343,21 +362,23 @@ for example 'parent_folder/sub_folder/share_folder' or 'parent_folder/share_fold
 if there is a subfolder add a '/' next to it
 example input 'sub_folder/share_folder' or '/share_folder': " filename
           
-          file_dir="~/share/$filename"
+          file_dir="/share/$filename"
           echo "The entire directory is under this '$file_dir'"
           read -r -p "Confirm the change? (y/N): " filechange
 
           if [[ "$filechange" =~ ^[Yy]$ ]]; then
-            if [ ! -d "$file_dir" ]; then
-              sudo mkdir -p "$file_dir"
-              if [ $? -eq 0 ]; then
-                echo "Directory created successfully."
+            if sudo -E mkdir -p "$file_dir"; then  # Use `-E` to preserve environment variables
+              echo "Directory created successfully."
+            else
+              if [ $? -eq 13 ]; then  # Check for permission error (code 13)
+                echo "Error: Insufficient permissions to create directory."
               else
                 echo "Failed to create directory."
               fi
             fi
             break
           fi
+
         done
        
       fi
