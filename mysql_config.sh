@@ -12,7 +12,8 @@
 
 main(){
     # Update package lists
-    sudo apt update
+    sudo apt-get update -y
+    sudo apt-get full-upgrade -y
     
     mariadbinstall
 
