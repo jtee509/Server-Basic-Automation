@@ -471,26 +471,36 @@ echo "(____/\_/\_/\_)(_/(____/\_/\_/   \___)\__/ \_)__)(__)  (__)\___/ "
 
 echo "
 
-Here is the configuration. 
-You may reconfigure on later if you do want to editing the file below
-using the 'sudo nano' commmand.
-
-NOTICE : 
-All the files within the configuration are under ROOT ownership.
-DO NOT change the ownership!! 
-"
-
-echo "/etc/samba/smb.conf file output : 
+/etc/samba/smb.conf file output : 
 
 "
 
 sudo cat /etc/samba/smb.conf
 
-echo "/etc/samba/shares.conf file output : 
+echo "
+
+/etc/samba/shares.conf file output : 
 
 "
 
 sudo cat /etc/samba/shares.conf
+
+
+echo "
+
+Here is the all the configuration made above
+You may reconfigure on later if you do want to editing the file below
+using the 'sudo nano /etc/samba/shares.conf' commmand.
+
+NOTICE : 
+All the files within the configuration are under ROOT ownership.
+DO NOT change the ownership!! 
+
+The following ports have been allowed through UFW configuration:
+80
+443
+445
+"
 
 for i in "${path2[@]}"; do 
    # Set ownership and permissions for the share directory (adjust as needed)
@@ -501,3 +511,13 @@ done
 # Restart Samba
 sudo systemctl restart smbd
 sudo systemctl restart nmbd
+
+
+
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw allow 445
+
+sudo ufw disable
+sudo ufw enable
+
