@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+sudo apt update -y
+sudo apt upgrade -y
+
+sudo apt install python3
+sudo apt install python3-pip
+
 # Function to start a website
 start_website() {
   port="$1"
