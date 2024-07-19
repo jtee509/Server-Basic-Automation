@@ -4,49 +4,36 @@
 sudo apt update -y
 sudo apt upgrade -y
 
-sudo apt install python3
-sudo apt install python3-pip
+sudo apt install python3 -y
+sudo apt install python3-pip -y 
 
-# Function to start a website
-start_website() {
-  port="$1"
-  website_dir="$2"
+# Define ports for each HTML file
+PORT1=8000
+PORT2=8080
 
-  # Error handling for invalid port number (outside 1-65535 range)
-  if [[ $port -lt 1 || $port -gt 65535 ]]; then
-    echo "Error: Invalid port number $port. Please choose a port between 1 and 65535."
-    exit 1
-  fi
-  # Start the Python server in the background
-  python3 -m http.server "$port" -d "$website_dir" &
-  server_pid=$!
+# Get the current directory (where the script is located)
+CURRENT_DIR=$(pwd)
 
-  wait -o  $server_pid
-  if [[ $? -eq 0 ]]; then
-    echo "Website started on port $port (directory: $website_dir)"
-  else
-    echo "Error: Failed to start website on port $port"
-  fi
-  # Add trap to handle termination (Ctrl+C) and ensure proper cleanup
-  trap "kill $server_pid; echo '\nWebsite stopped on port $port'" EXIT
+# Define paths to HTML files (use relative paths based on current directory)
+HTML1_PATH="$CURRENT_DIR/example1.html"
+HTML2_PATH="$CURRENT_DIR/example2.html"
 
-  # Detach the script from the terminal (optional, but recommended for long-running processes)
-  disown
-}
+# Check if both HTML files exist
+if [[ ! -f "$HTML1_PATH" || ! -f "$HTML2_PATH" ]]; then
+  echo "Error: One or both HTML files not found!"
+  exit 1
+fi
 
-# Website directories (replace with your actual website directories)
-website1_dir="example1.html"
-website2_dir="example2.html"
+# Start serving the first HTML on port $PORT1
+python -m http.server $PORT1 $HTML1_HTML &
+PID1=$!  # Capture process ID for first server
 
-# Choose appropriate ports (avoid conflicts with other processes)
-website1_port=8000
-website2_port=8001
+# Start serving the second HTML on port $PORT2
+python -m http.server $PORT2 $HTML2_PATH &
+PID2=$!  # Capture process ID for second server
 
-# Start websites in the background
-start_website "$website1_port" "$website1_dir"
-start_website "$website2_port" "$website2_dir"
-
-# Wait for both websites to finish (optional, if you want the script to remain running)
-wait
-
-echo "All websites stopped."
+# Print confirmation message and instructions
+echo "Serving example1.html on port: $PORT1 (PID: $PID1)"
+echo "Serving example2.html on port: $PORT2 (PID: $PID2)"
+echo "To stop the servers manually, use the following command:"
+echo "kill $PID1 $PID2"
