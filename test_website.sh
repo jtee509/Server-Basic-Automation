@@ -10,14 +10,16 @@ start_website() {
     echo "Error: Invalid port number $port. Please choose a port between 1 and 65535."
     exit 1
   fi
-
   # Start the Python server in the background
   python3 -m http.server "$port" -d "$website_dir" &
   server_pid=$!
 
-  # Print server information with clear formatting
-  echo "Website started on port $port (directory: $website_dir)"
-
+  wait -o  $server_pid
+  if [[ $? -eq 0 ]]; then
+    echo "Website started on port $port (directory: $website_dir)"
+  else
+    echo "Error: Failed to start website on port $port"
+  fi
   # Add trap to handle termination (Ctrl+C) and ensure proper cleanup
   trap "kill $server_pid; echo '\nWebsite stopped on port $port'" EXIT
 
