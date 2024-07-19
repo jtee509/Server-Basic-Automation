@@ -8,8 +8,8 @@ sudo apt install python3 -y
 sudo apt install python3-pip -y 
 
 # Define ports for each HTML file
-PORT1=8000
-PORT2=8080
+PORT1=8001
+PORT2=8002
 
 # Get the current directory (where the script is located)
 CURRENT_DIR=$(pwd)
