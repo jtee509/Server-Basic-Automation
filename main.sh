@@ -95,31 +95,30 @@ is_odd() {
   return $(( n % 2 ))
 }
 
-# Loop through selected services and install
+# Loop through selected services and install with custom script handling
 for service in "${selected_services[@]}"; do
   echo "Installing $service..."
   # Install the package using your preferred package manager (e.g., apt, yum)
-  sudo apt install "$service" -y  # Replace with your package manager
-  
-  # Find index of service in CUSTOM_CONFIGS
-  service_index=$(echo "${CUSTOM_CONFIGS[@]}" | grep -n "$service" | cut -d: -f1)
+  sudo apt install "$service" -y # Replace with your package manager
+
+  # Find index of service in CUSTOM_CONFIGS (optimized)
+  service_index=$(echo "${!CUSTOM_CONFIGS[@]}" | grep -n -w "$service" | cut -d: -f1)
 
   if [[ -n "$service_index" ]]; then
     # Calculate index of custom script (even index after)
     custom_script_index=$((service_index + 1))
-    if [[ $custom_script_index -le ${#CUSTOM_CONFIGS[@]} ]]; then
-      custom_script="${CUSTOM_CONFIGS[$((custom_script_index - 1))]}"  # Adjust for zero-based indexing
 
-      # Check if script path exists
-      if [[ -f "$custom_script" ]]; then
-        # More efficient check for even index using arithmetic expansion
-        if ! is_odd $(( ${#selected_services[@]} - ${!selected_services[@]/$service/} )); then
-          config_script="$custom_script"
-          echo "Running custom configuration script: $config_script"
-          ./"$config_script"
-        fi
-      fi
+    # Check if custom script index is within bounds and script exists
+    if [[ $custom_script_index -le ${#CUSTOM_CONFIGS[@]} && -f "${CUSTOM_CONFIGS[$((custom_script_index - 1))]}" ]]; then
+      custom_script="${CUSTOM_CONFIGS[$((custom_script_index - 1))]}"
+      echo "Service: $service (custom script: $custom_script)"
+      # Execute the custom script (replace with your desired action)
+      ./"$custom_script"
+    else
+      echo "Service: $service (no custom script or script not found)"
     fi
+  else
+    echo "Service: $service (not found in custom configs)"
   fi
 done
 
