@@ -91,12 +91,15 @@ printf '%s\n' "${selected_services[@]}"
 
 # Loop through selected services and install
 for service in "${selected_services[@]}"; do
-  # Check if custom configuration script exists
-  if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
-    config_script="${CUSTOM_CONFIGS[$service]}"
-    echo "Running custom configuration script: $config_script"
-    ./"$config_script"  # Assuming scripts are in the same directory
-  else
+    # Get the corresponding script path from CUSTOM_CONFIGS
+    script_path="${CUSTOM_CONFIGS[$service]}"
+    
+    # Execute the script (if even index and script exists)
+    if ! is_odd $(( (${SELECTED_SERVICES[@]/"$service"/} - 1) )); then
+      config_script="$script_path"
+      echo "Running custom configuration script: $config_script"
+      ./"$config_script"
+    fi
     echo "Installing $service..."
     # Install the package using your preferred package manager (e.g., apt, yum)
     sudo apt install "$service"  # Replace with your package manager
