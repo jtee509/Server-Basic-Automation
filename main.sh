@@ -94,17 +94,15 @@ for service in "${selected_services[@]}"; do
   # Install the package using your preferred package manager (e.g., apt, yum)
   sudo apt install "$service" -y  # Replace with your package manager
   
-  # Check if custom configuration script exists
-  if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
-    # Get script based on service name (odd position)
-    config_script="${CUSTOM_CONFIGS[$(($service % 2))]}"
-    
-    # Check if script exists at even position (script path)
-    if [[ -f "${CUSTOM_CONFIGS[$(($service + 1 % 2))]}" ]]; then
+  script_path="${CUSTOM_CONFIGS[$service]}"
+
+  # Check if script path exists (avoid potential errors)
+  if [[ -f "$script_path" ]]; then
+    # Check if service number (index + 1) is odd
+    if ! is_odd $(( (${SELECTED_SERVICES[@]/"$service"/} - 1) )); then  # More efficient way to check even index
+      config_script="$script_path"
       echo "Running custom configuration script: $config_script"
-      ./"$config_script"  # Assuming scripts are in the same directory
-    else
-      echo "Warning: Script path not found for service: $service"
+      ./"$config_script"
     fi
   fi
 done
