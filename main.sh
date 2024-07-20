@@ -55,6 +55,13 @@ function validate_input() {
   fi
 }
 
+# Print available services with numbers
+echo "Available Services:"
+for (( i=0; i<${#SERVICES[@]}; i++ )); do
+  service="${SERVICES[$i]}"
+  echo "$(($i+1)). $service"
+done
+
 # Get user input
 read -p "Enter the number(s) of the packages you want to install (e.g., 1-4 5 8 11-13): " choices
 
