@@ -1,46 +1,43 @@
 #!/bin/bash
 
-# Simplify directory structure (assuming script and files are in the same location)
-website_dir=$(pwd)
+# Function to start a website
+start_website() {
+  port="$1"
+  website_dir="$2"
 
-# Create example HTML files (replace with your content)
-echo "<h1>Welcome to Example Website 1</h1>" > example1.html
-echo "<h1>Welcome to Example Website 2</h1>" > example2.html
+  # Error handling for invalid port number (outside 1-65535 range)
+  if [[ $port -lt 1 || $port -gt 65535 ]]; then
+    echo "Error: Invalid port number $port. Please choose a port between 1 and 65535."
+    exit 1
+  fi
 
-# Configure nginx server blocks
-sudo cat << EOF > /etc/nginx/conf.d/multisite.conf
-server {
-  listen 8001;
-  server_name localhost;
+  # Start the Python server in the background
+  python3 -m http.server "$port" -d "$website_dir" &
+  server_pid=$!
 
-  # Access restriction for localhost only
-  allow 127.0.0.1;
-  deny all;
+  # Print server information with clear formatting
+  echo "Website started on port $port (directory: $website_dir)"
 
-  root $website_dir;
-  index example1.html;
-  location / {
-    try_files $uri $uri/ =404;
-  }
+  # Add trap to handle termination (Ctrl+C) and ensure proper cleanup
+  trap "kill $server_pid; echo '\nWebsite stopped on port $port'" EXIT
+
+  # Detach the script from the terminal (optional, but recommended for long-running processes)
+  disown
 }
 
-server {
-  listen 8002;
-  server_name localhost;
+# Website directories (replace with your actual paths)
+website1_dir="/Server-Basic-Automation/example1.html"
+website2_dir="/Server-Basic-Automation/example2.html"
 
-  # Access restriction for localhost only
-  allow 127.0.0.1;
-  deny all;
+# Choose appropriate ports (avoid conflicts with other processes)
+website1_port=8000
+website2_port=8001
 
-  root $website_dir;
-  index example2.html;
-  location / {
-    try_files $uri $uri/ =404;
-  }
-}
-EOF
+# Start websites in the background
+start_website "$website1_port" "$website1_dir"
+start_website "$website2_port" "$website2_dir"
 
-# Reload nginx configuration
-sudo systemctl reload nginx
+# Wait for both websites to finish (optional, if you want the script to remain running)
+wait
 
-echo "Websites are now running on ports 8001 and 8002 (localhost only)"
+echo "All websites stopped."
