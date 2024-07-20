@@ -88,21 +88,37 @@ done
 echo "Selected services:"
 printf '%s\n' "${selected_services[@]}"
 
+
+# Function to check if a number is odd
+is_odd() {
+  local n=$1
+  return $(( n % 2 ))
+}
+
 # Loop through selected services and install
 for service in "${selected_services[@]}"; do
   echo "Installing $service..."
   # Install the package using your preferred package manager (e.g., apt, yum)
   sudo apt install "$service" -y  # Replace with your package manager
   
-  script_path="${CUSTOM_CONFIGS[$service]}"
+  # Find index of service in CUSTOM_CONFIGS
+  service_index=$(echo "${CUSTOM_CONFIGS[@]}" | grep -n "$service" | cut -d: -f1)
 
-  # Check if script path exists (avoid potential errors)
-  if [[ -f "$script_path" ]]; then
-    # Check if service number (index + 1) is odd
-    if ! is_odd $(( (${SELECTED_SERVICES[@]/"$service"/} - 1) )); then  # More efficient way to check even index
-      config_script="$script_path"
-      echo "Running custom configuration script: $config_script"
-      ./"$config_script"
+  if [[ -n "$service_index" ]]; then
+    # Calculate index of custom script (even index after)
+    custom_script_index=$((service_index + 1))
+    if [[ $custom_script_index -le ${#CUSTOM_CONFIGS[@]} ]]; then
+      custom_script="${CUSTOM_CONFIGS[$((custom_script_index - 1))]}"  # Adjust for zero-based indexing
+
+      # Check if script path exists
+      if [[ -f "$custom_script" ]]; then
+        # More efficient check for even index using arithmetic expansion
+        if ! is_odd $(( ${#selected_services[@]} - ${!selected_services[@]/$service/} )); then
+          config_script="$custom_script"
+          echo "Running custom configuration script: $config_script"
+          ./"$config_script"
+        fi
+      fi
     fi
   fi
 done
