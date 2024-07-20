@@ -34,12 +34,11 @@ SERVICES=(
   "htop"   # System monitor
 )
 
-# Define custom configuration scripts
 CUSTOM_CONFIGS=(
-  "mariadb" = "mysql_config.sh"
-  "samba-common" = "samba_config.sh"
-  "squid" = "squid_proxy.sh"
-  "apache2" = "apache2_install.sh"
+  "mariadb" "mysql_config.sh"
+  "samba-common" "samba_config.sh"
+  "squid" "squid_proxy.sh"
+  "apache2" "apache2_install.sh"
 )
 
 # Function to validate user input
@@ -97,9 +96,16 @@ for service in "${selected_services[@]}"; do
   
   # Check if custom configuration script exists
   if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
-    config_script="${CUSTOM_CONFIGS[$service]}"
-    echo "Running custom configuration script: $config_script"
-    ./"$config_script"  # Assuming scripts are in the same directory
+    # Get script based on service name (odd position)
+    config_script="${CUSTOM_CONFIGS[$(($service % 2))]}"
+    
+    # Check if script exists at even position (script path)
+    if [[ -f "${CUSTOM_CONFIGS[$(($service + 1 % 2))]}" ]]; then
+      echo "Running custom configuration script: $config_script"
+      ./"$config_script"  # Assuming scripts are in the same directory
+    else
+      echo "Warning: Script path not found for service: $service"
+    fi
   fi
 done
 
