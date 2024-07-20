@@ -36,10 +36,10 @@ SERVICES=(
 
 # Define custom configuration scripts
 CUSTOM_CONFIGS=(
-  "mariadb"="mysql_config.sh"
-  "samba-common"="samba_config.sh"
-  "squid"="squid_proxy.sh"
-  "apache2"="apache2_install.sh"
+  "mariadb" = "mysql_config.sh"
+  "samba-common" = "samba_config.sh"
+  "squid" = "squid_proxy.sh"
+  "apache2" = "apache2_install.sh"
 )
 
 # Function to validate user input
