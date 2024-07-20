@@ -48,6 +48,15 @@ CUSTOM_PACKAGES=(
   "apache2_install.sh"
 )
 
+installed_packages=()
+non_installed_packages=()
+
+# Function to check if package is installed
+is_installed() {
+  dpkg -l | grep -q "^ii  $1 "
+  return $?
+}
+
 # Function to validate user input
 function validate_input() {
   local input="$1"
@@ -76,46 +85,38 @@ if ! validate_input "$choices"; then
   exit 1
 fi
 
-# Declare an empty array to store selected services
-selected_services=()
-
-# Loop through selected choices
-for num in $choices; do
-  # Check if number is within valid service range (1 to ${#SERVICES[@]})
-  if [[ $num -ge 1 && $num -le ${#SERVICES[@]} ]]; then
-    # Get the service name based on the index (num - 1)
-    service="${SERVICES[$(($num - 1))]}"
-    selected_services+=("$service")
+# Process user choices - convert to service names
+service_names=()
+for choice in $choices; do
+  # Check for range (e.g., 1-4)
+  if [[ $choice =~ ^[0-9]+-[0-9]+$ ]]; then
+    start=${choice%%-*}
+    end=${choice##-*}
+    for (( i=$start; i<=$end; i++ )); do
+      service_names+=("${SERVICES[$(($i - 1))]}")  # Adjust index for 0-based array
+    done
   else
-    echo "Warning: Skipping invalid selection: $num"
+    # Individual number (e.g., 5)
+    service_names+=("${SERVICES[$(($choice - 1))]}")  # Adjust index for 0-based array
   fi
 done
 
-# Print selected services
-echo "Selected services:"
-printf '%s\n' "${selected_services[@]}"
-
-# Loop through selected services and install
-for service in "${selected_services[@]}"; do
-  script_index=0
-  for custom_service in "${CUSTOM_SERVICES[@]}"; do
-    if [[ "$custom_service" == "$service" ]]; then
-      break
+# Install chosen services
+for service in "${service_names[@]}"; do
+  if [[ " ${CUSTOM_SERVICES[@]} " =~ " $service " ]]; then
+    # Use custom configuration script
+    source ./${CUSTOM_PACKAGES[$(expr ${#CUSTOM_SERVICES[@]} - 1)]}  # Call the last matching script
+  else
+    # Basic installation using apt
+    sudo apt install -y "$service"
+    if [ $? -eq 0 ]; then
+      installed_packages+=("$service")
+    else
+      non_installed_packages+=("$service")
     fi
-    script_index=$((script_index + 1))
-  done
-
-  if [[ $script_index -lt ${#CUSTOM_SERVICES[@]} ]]; then
-    # Service found in CUSTOM_SERVICES
-    config_script="${CUSTOM_PACKAGES[$script_index]}"
-    echo "Running custom configuration script: $config_script"
-    ./"$config_script"
-  else
-    # Service not found, install package
-    echo "Installing $service..."
-    # Install the package using your preferred package manager (e.g., apt, yum)
-    sudo apt install "$service"  # Replace with your package manager
   fi
 done
 
-echo "Installation complete!"
+# Print installation status
+echo "Installed Packages: ${installed_packages[@]}"
+echo "Non-Installed Packages: ${non_installed_packages[@]}"
