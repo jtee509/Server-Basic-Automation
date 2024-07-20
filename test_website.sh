@@ -8,7 +8,7 @@ echo "<h1>Welcome to Example Website 1</h1>" > example1.html
 echo "<h1>Welcome to Example Website 2</h1>" > example2.html
 
 # Configure nginx server blocks
-cat << EOF > /etc/nginx/conf.d/multisite.conf
+sudo cat << EOF > /etc/nginx/conf.d/multisite.conf
 server {
   listen 8001;
   server_name localhost;
