@@ -1,24 +1,46 @@
 #!/bin/bash
 
-sudo apt update -y
-sudo apt upgrade -y
+# Simplify directory structure (assuming script and files are in the same location)
+website_dir=$(pwd)
 
-sudo apt install python3 -y
-sudo apt install python3-pip -y 
+# Create example HTML files (replace with your content)
+echo "<h1>Welcome to Example Website 1</h1>" > example1.html
+echo "<h1>Welcome to Example Website 2</h1>" > example2.html
 
-# Define ports for each HTML file
-PORT1=8001
-PORT2=8002
+# Configure nginx server blocks
+cat << EOF > /etc/nginx/conf.d/multisite.conf
+server {
+  listen 8001;
+  server_name localhost;
 
-# Define paths to your HTML files
-HTML_FILE1="example1.html"
-HTML_FILE2="example2.html"
+  # Access restriction for localhost only
+  allow 127.0.0.1;
+  deny all;
 
-# Start servers in the background
-python3 server.py $PORT1 $HTML_FILE1 &
-python3 server.py $PORT2 $HTML_FILE2 &
+  root $website_dir;
+  index example1.html;
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}
 
-# Print confirmation message
-echo "Servers started:"
-echo "  - http://localhost:$PORT1 - $HTML_FILE1"
-echo "  - http://localhost:$PORT2 - $HTML_FILE2"
+server {
+  listen 8002;
+  server_name localhost;
+
+  # Access restriction for localhost only
+  allow 127.0.0.1;
+  deny all;
+
+  root $website_dir;
+  index example2.html;
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}
+EOF
+
+# Reload nginx configuration
+sudo systemctl reload nginx
+
+echo "Websites are now running on ports 8001 and 8002 (localhost only)"

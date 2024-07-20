@@ -1,56 +1,5 @@
 #!/bin/bash
 
-# This script is designed for Ubuntu Server and uses apt for package management.
-
-echo "
- ____  ____  ____  _  _  ____  ____    ____   __   ____  __  ___       
-/ ___)(  __)(  _ \/ )( \(  __)(  _ \  (  _ \ / _\ / ___)(  )/ __)      
-\___ \ ) _)  )   /\ \/ / ) _)  )   /   ) _ (/    \\___ \ )(( (__       
-(____/(____)(__\_) \__/ (____)(__\_)  (____/\_/\_/(____/(__)\___)      
-  __  __ _  ____  ____  __   __    __     __  ____  __  __   __ _      
- (  )(  ( \/ ___)(_  _)/ _\ (  )  (  )   / _\(_  _)(  )/  \ (  ( \     
-  )( /    /\___ \  )( /    \/ (_/\/ (_/\/    \ )(   )((  O )/    /     
- (__)\_)__)(____/ (__)\_/\_/\____/\____/\_/\_/(__) (__)\__/ \_)__)    
-
-"
-
-# Define a function to print the service list with numbering
-function print_service_list() {
-  echo "** Available Services **"
-  for ((i=0; i<${#SERVICES[@]}; i++)); do
-    echo "$(($i+1)). ${SERVICES[$i]}"
-  done
-  echo
-}
-
-# Function to process a selected package
-function process_package() {
-  local index=$(( $1 - 1 ))
-  if [[ $index -lt 0 || $index -ge ${#SERVICES[@]} ]]; then
-    echo "Invalid package number: $1"
-    return
-  fi
-
-  echo "Installing: ${SERVICES[$index]}"
-
-  # Install package using apt and capture exit code
-  if sudo apt install "${SERVICES[$index]%:*}" &> /dev/null; then
-    SUCCESSFUL+=("${SERVICES[$index]}")
-  else
-    FAILED+=("${SERVICES[$index]}")
-    echo "  **Failed to install: ${SERVICES[$index]}"
-  fi
-
-  # Check for custom configuration script
-  local config_script="${CUSTOM_CONFIGS[$index]}"
-  if [[ ! -z "${CUSTOM_CONFIGS[$index]}" ]]; then
-    echo "Running custom configuration for ${SERVICES[$index]%:*}..."
-    ./${CUSTOM_CONFIGS[$index]}  # Use shell expansion here
-  fi
-
-}
-
-
 # Define an array of services to install
 SERVICES=(
   "apache2"  # Web server
@@ -60,6 +9,8 @@ SERVICES=(
   "fail2ban" # Intrusion detection (optional)
   "ufw"      # Firewall (optional)
   "nextcloud" #file sharing server
+  "nginx" 
+  "nodejs" 
   # Database options
   "postgresql" # Alternative database server (optional)
   "mariadb"    # Another database option (optional)
@@ -86,77 +37,81 @@ SERVICES=(
 # Define custom configuration scripts
 CUSTOM_CONFIGS=(
   "mariadb"="mysql_config.sh"
-  "samba"="samba_config.sh"
+  "samba-common"="samba_config.sh"
   "squid"="squid_proxy.sh"
   "apache2"="apache2_install.sh"
 )
 
-# Track successful and failed installations (initially empty)
-SUCCESSFUL=()
-FAILED=()
-
-
-# Print the service list with numbering
-print_service_list
-
-# Get user selection
-read -p "
-
-
-This are a few starters packages within the services itself. 
-Select packages (numbers, ranges, or both separated by spaces) (e.g., 1-3 8 12-14): " SELECTION
-
-
-
-
-# Function to check if a number is within a range (inclusive)
-function in_range() {
-  local num=$1
-  local start=$2
-  local end=$3
-  [[ $num -ge $start && $num -le $end ]]
+# Function to validate user input
+function validate_input() {
+  local input="$1"
+  
+  # Check if input is empty
+  if [[ -z "$input" ]]; then
+    echo "Invalid input. Please enter a selection."
+    return 1
+  fi
+  
+  # Check for valid characters (numbers, hyphens, and spaces)
+  if [[ ! "$input" =~ ^[0-9 -]+$ ]]; then
+    echo "Invalid input. Use numbers, hyphens (-), and spaces."
+    return 1
+  fi
+  return 0
 }
 
-sudo apt-get update
-sudo apt-get full-upgrade
+# Get user input for services
+read -p "Enter service numbers (e.g., 1-5 19 4 10-12): " selection
 
-# Loop through selected packages
-for package in $SELECTION; do
+# Validate user input
+if ! validate_input "$selection"; then
+  exit 1
+fi
 
-  # Check if selection is a range
-  if [[ $package =~ ^[0-9]+-[0-9]+$ ]]; then
-    start=${package%%-*}
-    end=${package##-*}
-    # Validate range
-    if [[ ! $start =~ ^[0-9]+$ || ! $end =~ ^[0-9]+$ || $start -gt $end ]]; then
-      echo "Invalid range: $package"
-      continue
-    fi
-    # Loop through packages in the range
-    for ((i=$start; i<=$end; i++)); do
-      process_package $i
+# Loop through user selection
+IFS=" " read -r -a choices <<< "$selection"
+
+# Function to install service
+function install_service() {
+  local service="$1"
+  echo "Installing service: $service"
+  
+  # Use your preferred package manager here (e.g., apt, yum)
+  # Replace with the appropriate command for your system
+  sudo apt install "$service" -y
+
+  # Check if custom configuration script exists
+  if [[ -n "${CUSTOM_CONFIGS[$service]}" ]]; then
+    local config_script="${CUSTOM_CONFIGS[$service]}"
+    echo "Running custom configuration script: $config_script"
+    ./"$config_script"
+  fi
+}
+
+# Install selected services
+for choice in "${choices[@]}"; do
+  # Check for range selection
+  if [[ $choice =~ ^[0-9]+-[0-9]+$ ]]; then
+    # Extract start and end numbers from range
+    start=${choice%%-*}
+    end=${choice##*-}
+    
+    # Loop through the range and install services
+    for (( i=$start; i<=$end; i++ )); do
+      if [[ $i -le ${#SERVICES[@]} ]]; then
+        install_service "${SERVICES[i-1]}"
+      else
+        echo "Skipping invalid service number: $i"
+      fi
     done
-  # Check if selection is a single number
-  elif [[ $package =~ ^[0-9]+$ ]]; then
-    process_package $package
   else
-    echo "Invalid selection: $package"
+    # Install specific service by index
+    if [[ $choice -le ${#SERVICES[@]} ]]; then
+      install_service "${SERVICES[choice-1]}"
+    else
+      echo "Skipping invalid service number: $choice"
+    fi
   fi
 done
 
-# Print successful and failed installations
-echo "Successfully Installed Packages:"
-echo "${SUCCESSFUL[@]}"
-
-if [[ ${#FAILED[@]} -gt 0 ]]; then
-  echo "Failed to Install Packages:"
-  echo "${FAILED[@]}"
-fi
-
-
-echo "
-
-Thank you for using the this automation" 
-
-
-
+echo "Installation complete!"
