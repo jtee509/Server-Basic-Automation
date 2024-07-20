@@ -35,8 +35,7 @@ SERVICES=(
 )
 
 CUSTOM_CONFIGS=(
-  " " #do not edit this
-  "mariadb" "mysql_config.sh"
+  "mariadb" "mariadb_config.sh"
   "samba-common" "samba_config.sh"
   "squid" "squid_proxy.sh"
   "apache2" "apache2_install.sh"
