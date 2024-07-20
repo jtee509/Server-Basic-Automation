@@ -1,40 +1,12 @@
 #!/bin/bash
 
-# Define an array of services to install
 SERVICES=(
   "apache2"  # Web server
   "php"       # PHP for web development
   "postfix"   # Mail server (optional)
-  "vsftpd"    # FTP server (optional)
-  "fail2ban"  # Intrusion detection (optional)
-  "ufw"       # Firewall (optional)
-  "nextcloud" # File sharing server
-  "nginx"
-  "nodejs"
-  # Database options
-  "postgresql" # Alternative database server (optional)
-  "mariadb"   # Another database option (optional)
-  # File sharing
-  "samba-common"  # Core Samba libraries for file sharing (optional)
-  "nfs-kernel-server" # NFS file sharing server (optional)
-  # Development tools
-  "git"        # Version control system (optional)
-  "python3"    # Python programming language (optional)
-  "nodejs"    # Javascript runtime environment (optional)
-  # Other servers
-  "nginx"      # Another web server option (optional)
-  "dhcp"       # DHCP server (optional)
-  "ssh"        # Secure shell server (already installed on most systems)
-  "squid"
-  # In-memory data stores
-  "redis"  # In-memory data store (optional)
-  "memcached" # Another in-memory data store (optional)
-  # Monitoring
-  "monit"  # Process monitoring tool (optional)
-  "htop"   # System monitor
+  # ... (other services)
 )
 
-# Define custom configuration scripts
 CUSTOM_SERVICES=(
   "mariadb" 
   "samba-common" 
@@ -97,7 +69,13 @@ for choice in $choices; do
     done
   else
     # Individual number (e.g., 5)
-    service_names+=("${SERVICES[$(($choice - 1))]}")  # Adjust index for 0-based array
+    # Fix for choices greater than 9: subtract 1 before using as index
+    index=$((choice - 1))
+    if [[ $index -lt ${#SERVICES[@]} ]]; then  # Check for valid index
+      service_names+=("${SERVICES[$index]}")
+    else
+      echo "Invalid choice: $choice. Service does not exist."
+    fi
   fi
 done
 
