@@ -35,11 +35,17 @@ SERVICES=(
 )
 
 # Define custom configuration scripts
-CUSTOM_CONFIGS=(
-  "mariadb"="mariadb_config.sh"
-  "samba-common"="samba_config.sh"
-  "squid"="squid_proxy.sh"
-  "apache2"="apache2_install.sh"
+CUSTOM_SERVICES=(
+  "mariadb" 
+  "samba-common" 
+  "squid" 
+  "apache2" 
+)
+CUSTOM_PACKAGES=(
+  "mariadb_config.sh"
+  "samba_config.sh"
+  "squid_proxy.sh"
+  "apache2_install.sh"
 )
 
 # Function to validate user input
@@ -91,18 +97,18 @@ printf '%s\n' "${selected_services[@]}"
 
 # Loop through selected services and install
 for service in "${selected_services[@]}"; do
-    # Get the corresponding script path from CUSTOM_CONFIGS
-    script_path="${CUSTOM_CONFIGS[$service]}"
-
-    # Execute the script (if even index and script exists)
-    if ! is_odd $(( (${SELECTED_SERVICES[@]/"$service"/} - 1) )); then
-      config_script="$script_path"
-      echo "Running custom configuration script: $config_script"
-      ./"$config_script"
-    fi
+  # Check if service name exists in CUSTOM_SERVICES
+  if [[ " ${CUSTOM_SERVICES[@]} " =~ " $service " ]]; then
+    # Get the corresponding script path from CUSTOM_PACKAGES (use index)
+    script_index=$(( ${@CUSTOM_SERVICES[@]/$service/} - 1 ))
+    config_script="${CUSTOM_PACKAGES[$script_index]}"
+    echo "Running custom configuration script: $config_script"
+    ./"$config_script"
+  else
     echo "Installing $service..."
     # Install the package using your preferred package manager (e.g., apt, yum)
     sudo apt install "$service"  # Replace with your package manager
+  fi
 done
 
 echo "Installation complete!"
