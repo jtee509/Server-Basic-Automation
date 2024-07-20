@@ -63,21 +63,36 @@ if ! validate_input "$choices"; then
   exit 1
 fi
 
-# Loop through selected services
-for (( i=0; i<${#SERVICES[@]}; i++ )); do
-  # Check if service number is in the chosen range(s)
-  if [[ "$choices" =~ ($i+1) ]]; then
-    service="${SERVICES[$i]}"
-    echo "Installing $service..."
-    # Install the package using your preferred package manager (e.g., apt, yum)
-    sudo apt install "$service"  # Replace with your package manager
-    
-    # Check if custom configuration script exists
-    if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
-      config_script="${CUSTOM_CONFIGS[$service]}"
-      echo "Running custom configuration script: $config_script"
-      ./"$config_script"  # Assuming scripts are in the same directory
-    fi
+# Declare an empty array to store selected services
+selected_services=()
+
+# Loop through selected choices
+for num in $choices; do
+  # Check if number is within valid service range (1 to ${#SERVICES[@]})
+  if [[ $num -ge 1 && $num -le ${#SERVICES[@]} ]]; then
+    # Get the service name based on the index (num - 1)
+    service="${SERVICES[$(($num - 1))]}"
+    selected_services+=("$service")
+  else
+    echo "Warning: Skipping invalid selection: $num"
+  fi
+done
+
+# Print selected services
+echo "Selected services:"
+printf '%s\n' "${selected_services[@]}"
+
+# Loop through selected services and install
+for service in "${selected_services[@]}"; do
+  echo "Installing $service..."
+  # Install the package using your preferred package manager (e.g., apt, yum)
+  sudo apt install "$service"  # Replace with your package manager
+  
+  # Check if custom configuration script exists
+  if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
+    config_script="${CUSTOM_CONFIGS[$service]}"
+    echo "Running custom configuration script: $config_script"
+    ./"$config_script"  # Assuming scripts are in the same directory
   fi
 done
 
