@@ -93,7 +93,7 @@ printf '%s\n' "${selected_services[@]}"
 for service in "${selected_services[@]}"; do
     # Get the corresponding script path from CUSTOM_CONFIGS
     script_path="${CUSTOM_CONFIGS[$service]}"
-    
+
     # Execute the script (if even index and script exists)
     if ! is_odd $(( (${SELECTED_SERVICES[@]/"$service"/} - 1) )); then
       config_script="$script_path"
@@ -103,7 +103,6 @@ for service in "${selected_services[@]}"; do
     echo "Installing $service..."
     # Install the package using your preferred package manager (e.g., apt, yum)
     sudo apt install "$service"  # Replace with your package manager
-  fi
 done
 
 echo "Installation complete!"
