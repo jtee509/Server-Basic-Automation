@@ -17,12 +17,6 @@ start_website() {
 
   # Print server information with clear formatting
   echo "Website started on port $port (directory: $website_dir)"
-
-  # Add trap to handle termination (Ctrl+C) and ensure proper cleanup
-  trap "kill $server_pid; echo '\nWebsite stopped on port $port'" EXIT
-
-  # Detach the script from the terminal (optional, but recommended for long-running processes)
-  disown
 }
 
 # Website directories (replace with your actual paths)
@@ -35,9 +29,9 @@ website2_port=8001
 
 # Start websites in the background
 start_website "$website1_port" "$website1_dir"
-start_website "$website2_port" "$website2_dir"
+start_wrapper "$website2_port" "$website2_dir"
 
-# Wait for both websites to finish (optional, if you want the script to remain running)
-wait
-
-echo "All websites stopped."
+# Keep the script running indefinitely
+while true; do
+  sleep 60  # Optional: Add a sleep here to avoid busy waiting (adjust as needed)
+done
