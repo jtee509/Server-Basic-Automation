@@ -93,7 +93,7 @@ printf '%s\n' "${selected_services[@]}"
 for service in "${selected_services[@]}"; do
   echo "Installing $service..."
   # Install the package using your preferred package manager (e.g., apt, yum)
-  sudo apt install "$service"  # Replace with your package manager
+  sudo apt install "$service" -y  # Replace with your package manager
   
   # Check if custom configuration script exists
   if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
