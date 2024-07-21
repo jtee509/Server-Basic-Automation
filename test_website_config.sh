@@ -4,9 +4,11 @@
 PORT1=8080
 PORT2=8081
 
+sudo apt-get install python3 -y
+
 # Start simple HTTP servers for each page
-python -m http.server $PORT1 page1.html &
-python -m http.server $PORT2 page2.html &
+python3 -m http.server $PORT1 page1.html &
+python3 -m http.server $PORT2 page2.html &
 
 # Wait for background processes to finish (optional)
 # wait
