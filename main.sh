@@ -1,173 +1,91 @@
 #!/bin/bash
 
 # Define an array of services to install
-
 SERVICES=(
-
-"apache2" # Web server
-
-"php" # PHP for web development
-
-"postfix" # Mail server (optional)
-
-"vsftpd" # FTP server (optional)
-
-"fail2ban" # Intrusion detection (optional)
-
-"ufw" # Firewall (optional)
-
-"nextcloud" # File sharing server
-
-"nginx"
-
-"nodejs"
-
-# Database options
-
-"postgresql" # Alternative database server (optional)
-
-"mariadb" # Another database option (optional)
-
-# File sharing
-
-"samba-common" # Core Samba libraries for file sharing (optional)
-
-"nfs-kernel-server" # NFS file sharing server (optional)
-
-# Development tools
-
-"git" # Version control system (optional)
-
-"python3" # Python programming language (optional)
-
-"nodejs" # Javascript runtime environment (optional)
-
-# Other servers
-
-"nginx" # Another web server option (optional)
-
-"dhcp" # DHCP server (optional)
-
-"ssh" # Secure shell server (already installed on most systems)
-
-"squid"
-
-# In-memory data stores
-
-"redis" # In-memory data store (optional)
-
-"memcached" # Another in-memory data store (optional)
-
-# Monitoring
-
-"monit" # Process monitoring tool (optional)
-
-"htop" # System monitor
-
+  "apache2"  # Web server
+  "php"      # PHP for web development
+  "postfix"  # Mail server (optional)
+  "vsftpd"   # FTP server (optional)
+  "fail2ban" # Intrusion detection (optional)
+  "ufw"      # Firewall (optional)
+  "nextcloud" #file sharing server
+  "nginx" 
+  "nodejs" 
+  # Database options
+  "postgresql" # Alternative database server (optional)
+  "mariadb"    # Another database option (optional)
+  # File sharing
+  "samba-common"  # Core Samba libraries for file sharing (optional)
+  "nfs-kernel-server" # NFS file sharing server (optional)
+  # Development tools
+  "git"       # Version control system (optional)
+  "python3"  # Python programming language (optional)
+  "nodejs"    # Javascript runtime environment (optional)
+  # Other servers
+  "nginx"    # Another web server option (optional)
+  "dhcp"      # DHCP server (optional)
+  "ssh"       # Secure shell server (already installed on most systems)
+  "squid"
+  # In-memory data stores
+  "redis"    # In-memory data store (optional)
+  "memcached" # Another in-memory data store (optional)
+  # Monitoring
+  "monit"     # Process monitoring tool (optional)
+  "htop"      # System monitor 
 )
-
 
 # Define custom configuration scripts
-
-CUSTOM_SERVICES=(
-
-"mariadb"
-
-"samba-common"
-
-"squid"
-
-"apache2"
-
+CUSTOM_CONFIGS=(
+  "mariadb"="mysql_config.sh"
+  "samba-common"="samba_config.sh"
+  "squid"="squid_proxy.sh"
+  "apache2"="apache2_install.sh"
 )
 
-CUSTOM_PACKAGES=(
-
-"mariadb_config.sh"
-
-"samba_config.sh"
-
-"squid_proxy.sh"
-
-"apache2_install.sh"
-
-)
-
-installed_packages=()
-non_installed_packages=()
-
-# Function to check if package is installed
-is_installed() {
-  dpkg -l | grep -q "^ii  $1 "
-  return $?
+# Function to install services
+install_services() {
+  for service in "$@"; do
+    echo "Installing $service..."
+    # Add installation command here, e.g. apt-get install $service
+    # For this example, we'll just echo the installation command
+    echo "sudo apt-get install -y $service"
+  done
 }
 
-# Function to validate user input
-function validate_input() {
-  local input="$1"
-  
-  if [[ $input =~ ^[0-9]+(-[0-9]+)?([ ,]?[0-9]+)*$ ]]; then
-    # Valid range or list of numbers
-    return 0
-  else
-    echo "Invalid input. Please enter a range of numbers (e.g., 1-4) or a list of individual numbers (e.g., 1 3 5)."
-    return 1
-  fi
+# Function to configure services
+configure_services() {
+  for service in "$@"; do
+    if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
+      echo "Configuring $service..."
+      # Add configuration command here, e.g. bash ${CUSTOM_CONFIGS[$service]}
+      # For this example, we'll just echo the configuration command
+      echo "bash ${CUSTOM_CONFIGS[$service]}"
+    fi
+  done
 }
 
-# Print available services with numbers
-echo "Available Services:"
-for (( i=0; i<${#SERVICES[@]}; i++ )); do
-  service="${SERVICES[$i]}"
-  echo "$(($i+1)). $service"
+# Print the list of services
+echo "Select services to install (e.g. 1-5, 19, 4 10-12):"
+for i in "${!SERVICES[@]}"; do
+  echo "  $i: ${SERVICES[$i]}"
 done
 
-# Get user input
-read -p "Enter the number(s) of the packages you want to install (e.g., 1-4 5 8 11-13): " choices
+read -p "Enter your selection: " selection
 
-# Validate input
-if ! validate_input "$choices"; then
-  exit 1
-fi
-
-# Process user choices - convert to service names
-service_names=()
-for choice in $choices; do
-  # Check for range (e.g., 1-4)
-  if [[ $choice =~ ^[0-9]+-[0-9]+$ ]]; then
-    start=${choice%%-*}
-    end=${choice##-*}
-    for (( i=$start; i<=$end; i++ )); do
-      service_names+=("${SERVICES[$(($i - 1))]}")  # Adjust index for 0-based array
+# Parse the selection
+selected_services=()
+for sel in $selection; do
+  if [[ $sel =~ ^[0-9]+$ ]]; then
+    selected_services+=("${SERVICES[$sel-1]}")
+  elif [[ $sel =~ ^([0-9]+)-([0-9]+)$ ]]; then
+    start=${BASH_REMATCH[1]}
+    end=${BASH_REMATCH[2]}
+    for ((i=start; i<=end; i++)); do
+      selected_services+=("${SERVICES[$i-1]}")
     done
-  else
-    # Individual number (e.g., 5)
-    # Fix for choices greater than 9: subtract 1 before using as index
-    index=$((choice - 1))
-    if [[ $index -lt ${#SERVICES[@]} ]]; then  # Check for valid index
-      service_names+=("${SERVICES[$index]}")
-    else
-      echo "Invalid choice: $choice. Service does not exist."
-    fi
   fi
 done
 
-# Install chosen services
-for service in "${service_names[@]}"; do
-  if [[ " ${CUSTOM_SERVICES[@]} " =~ " $service " ]]; then
-    # Use custom configuration script
-    source ./${CUSTOM_PACKAGES[$(expr ${#CUSTOM_SERVICES[@]} - 1)]}  # Call the last matching script
-  else
-    # Basic installation using apt
-    sudo apt install -y "$service"
-    if [ $? -eq 0 ]; then
-      installed_packages+=("$service")
-    else
-      non_installed_packages+=("$service")
-    fi
-  fi
-done
-
-# Print installation status
-echo "Installed Packages: ${installed_packages[@]}"
-echo "Non-Installed Packages: ${non_installed_packages[@]}"
+# Install and configure the selected services
+install_services "${selected_services[@]}"
+configure_services "${selected_services[@]}"
