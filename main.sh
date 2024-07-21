@@ -8,7 +8,7 @@ SERVICES=(
   "vsftpd"   # FTP server (optional)
   "fail2ban" # Intrusion detection (optional)
   "ufw"      # Firewall (optional)
-  "nextcloud" #file sharing server
+  "nextcloud" # File sharing server
   "nginx" 
   "nodejs" 
   # Database options
@@ -20,9 +20,7 @@ SERVICES=(
   # Development tools
   "git"       # Version control system (optional)
   "python3"  # Python programming language (optional)
-  "nodejs"    # Javascript runtime environment (optional)
   # Other servers
-  "nginx"    # Another web server option (optional)
   "dhcp"      # DHCP server (optional)
   "ssh"       # Secure shell server (already installed on most systems)
   "squid"
@@ -36,56 +34,97 @@ SERVICES=(
 
 # Define custom configuration scripts
 CUSTOM_CONFIGS=(
-  "mariadb"="mysql_config.sh"
-  "samba-common"="samba_config.sh"
-  "squid"="squid_proxy.sh"
-  "apache2"="apache2_install.sh"
+  "mariadb"
+  "samba-common" 
+  "squid" 
+  "apache2" 
 )
 
-# Function to install services
-install_services() {
-  for service in "$@"; do
-    echo "Installing $service..."
-    # Add installation command here, e.g. apt-get install $service
-    # For this example, we'll just echo the installation command
-    echo "sudo apt-get install -y $service"
-  done
+CUSTOM_PACKAGES=(
+  "mysql_config.sh"
+  "samba_config.sh"
+  "squid_proxy.sh"
+  "apache2_install.sh"
+)
+
+# Display services to the user
+echo "Available services:"
+for (( i=0; i<${#SERVICES[@]}; i++ )); do
+  echo "  $((i+1)). ${SERVICES[i]}"
+done
+
+# Function to validate user input
+function validate_input() {
+  local input="$1"
+  
+  # Check if input is empty
+  if [[ -z "$input" ]]; then
+    echo "Invalid input. Please enter a selection."
+    return 1
+  fi
+  
+  # Check for valid characters (numbers, hyphens, and spaces)
+  if [[! "$input" =~ ^[0-9 -]+$ ]]; then
+    echo "Invalid input. Use numbers, hyphens (-), and spaces."
+    return 1
+  fi
+  return 0
 }
 
-# Function to configure services
-configure_services() {
-  for service in "$@"; do
-    if [[ ${CUSTOM_CONFIGS[$service]} ]]; then
-      echo "Configuring $service..."
-      # Add configuration command here, e.g. bash ${CUSTOM_CONFIGS[$service]}
-      # For this example, we'll just echo the configuration command
-      echo "bash ${CUSTOM_CONFIGS[$service]}"
+# Get user input for services
+read -p "Enter service numbers (e.g., 1-5 19 4 10-12): " selection
+
+# Validate user input
+if! validate_input "$selection"; then
+  exit 1
+fi
+
+# Loop through user selection
+IFS=" " read -r -a choices <<< "$selection"
+
+# Function to install service
+function install_service() {
+  local service="$1"
+  echo "Installing service: $service"
+  
+  # Use your preferred package manager here (e.g., apt, yum)
+  # Replace with the appropriate command for your system
+  sudo apt install "$service" -y
+
+  # Check if custom configuration script exists
+  for (( i=0; i<${#CUSTOM_CONFIGS[@]}; i++ )); do
+    if [[ "${CUSTOM_CONFIGS[i]}" == "$service" ]]; then
+      local config_script="${CUSTOM_PACKAGES[i]}"
+      echo "Running custom configuration script: $config_script"
+     ./"$config_script"
     fi
   done
 }
 
-# Print the list of services
-echo "Select services to install (e.g. 1-5, 19, 4 10-12):"
-for i in "${!SERVICES[@]}"; do
-  echo "  $i: ${SERVICES[$i]}"
-done
-
-read -p "Enter your selection: " selection
-
-# Parse the selection
-selected_services=()
-for sel in $selection; do
-  if [[ $sel =~ ^[0-9]+$ ]]; then
-    selected_services+=("${SERVICES[$sel-1]}")
-  elif [[ $sel =~ ^([0-9]+)-([0-9]+)$ ]]; then
-    start=${BASH_REMATCH[1]}
-    end=${BASH_REMATCH[2]}
-    for ((i=start; i<=end; i++)); do
-      selected_services+=("${SERVICES[$i-1]}")
+# Install selected services
+for choice in "${choices[@]}"; do
+  # Check for range selection
+  if [[ $choice =~ ^[0-9]+-[0-9]+$ ]]; then
+    # Extract start and end numbers from range
+    start=${choice%%-*}
+    end=${choice##*-}
+    
+    # Loop through the range and install services
+    for (( i=$start; i<=$end; i++ )); do
+      if [[ $i -le ${#SERVICES[@]} ]]; then
+        install_service "${SERVICES[i-1]}"
+      else
+        echo "Skipping invalid service number: $i"
+      fi
     done
+  else
+    # Install specific service by index
+    if [[ $choice -le ${#SERVICES[@]} ]]; then
+      install_service "${SERVICES[choice-1]}"
+    else
+      echo "Skipping invalid service number: $choice"
+    fi
   fi
 done
 
-# Install and configure the selected services
-install_services "${selected_services[@]}"
-configure_services "${selected_services[@]}"
+echo "Installation complete!"
