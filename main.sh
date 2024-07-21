@@ -19,6 +19,9 @@ print_configs() {
   done
 }
 
+
+print_configs
+
 # Get user input
 echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all):"
 read -r selections
@@ -50,6 +53,7 @@ fi
 for config in "${valid_selections[@]}"; do
   echo "Installing $config..."
   # Replace this line with the actual installation command for each configuration script
+  sudo chmod +x ${config}_config.sh
   ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
 done
 
