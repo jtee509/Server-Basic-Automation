@@ -1,64 +1,56 @@
 #!/bin/bash
 
 # Define available configurations
-CONFIGS=(
-  "Postfix (mail server)"
-  "Apache2 (web server)"
-  "iperf (network performance tool)"
-  "MariaDB (database server)"
-  "Nginx (web server)"
-  "Samba (file sharing)"
-  "Squid (web proxy server)"
+configs=(
+  "Postfix"
+  "apache2"
+  "iperf"
+  "mariadb"
+  "nginx"
+  "samba"
+  "squid_proxy"
 )
 
-# Function to print the menu
-function print_menu {
-  echo "Available Configurations:"
-  for (( i=0; i<${#CONFIGS[@]}; i++ )); do
-    echo -e "[$(($i+1))] - ${CONFIGS[$i]}"
+# Function to print available configurations
+print_configs() {
+  echo "Available configurations:"
+  for i in "${!configs[@]}"; do
+    echo -e "  $((i + 1)). ${configs[$i]}"
   done
 }
 
-# Get user selection(s)
-SELECTED_CONFIGS=()
-while true; do
-  print_menu
-  read -p "Enter number(s) to select (separated by spaces, or 'q' to quit): " SELECTION
+# Get user input
+echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all):"
+read -r selections
 
-  # Check for quit option
-  if [[ "$SELECTION" == "q" ]]; then
-    break
-  fi
-
-  # Validate selection
-  for num in $SELECTION; do
-    if [[ ! "$num" =~ ^[1-9]+$ ]]; then
-      echo "Invalid selection: '$num'"
-      continue 2
-    fi
-    if [[ $num -le 0 || $num -gt ${#CONFIGS[@]} ]]; then
-      echo "Invalid selection: '$num'"
-      continue 2
-    fi
-    SELECTED_CONFIGS+=("${CONFIGS[$(($num-1))]}")
+# Check if user wants to install all
+if [[ "$selections" == "all" ]]; then
+  for config in "${configs[@]}"; do
+    echo "Installing $config..."
+    # Replace this line with the actual installation command for each configuration script
+    ./${config}_install.sh  # Assuming installation scripts are named *_install.sh
   done
+  exit 0
+fi
 
-  if [[ ${#SELECTED_CONFIGS[@]} -eq 0 ]]; then
-    echo "No configurations selected."
-  else
-    echo "You selected: ${SELECTED_CONFIGS[@]}"
-    break
+# Validate user input
+valid_selections=()
+for selection in $selections; do
+  if [[ $selection -gt 0 && $selection -le ${#configs[@]} ]]; then
+    valid_selections+=("${configs[$(($selection - 1))]}")
   fi
 done
 
-# Run selected configurations
-if [[ ${#SELECTED_CONFIGS[@]} -gt 0 ]]; then
-  echo "Installing selected configurations..."
-  for config in "${SELECTED_CONFIGS[@]}"; do
-    # Replace 'config_name.sh' with the actual script name
-    bash config_name.sh
-  done
+if [[ ${#valid_selections[@]} -eq 0 ]]; then
+  echo "Invalid selection(s). Please enter valid number(s) or 'all'."
+  exit 1
 fi
 
-echo "Done."
+# Install selected configurations
+for config in "${valid_selections[@]}"; do
+  echo "Installing $config..."
+  # Replace this line with the actual installation command for each configuration script
+  ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
+done
 
+echo "Installation complete!"
