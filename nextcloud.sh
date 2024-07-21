@@ -1,37 +1,50 @@
 #!/bin/bash
 
-# Replace placeholders with actual values
-OS="ubuntu"
-WEB_SERVER="apache2"
-DATABASE="mysql"
-PHP_VERSION="8.1"
-
-# Update package lists
-sudo apt update -y
-
 # Install dependencies
-sudo apt install -y $WEB_SERVER $DATABASE-server php$PHP_VERSION libapache2-mod-php$PHP_VERSION php$PHP_VERSION-mysql php$PHP_VERSION-gd php$PHP_VERSION-curl php$PHP_VERSION-zip php$PHP_VERSION-intl
+sudo apt update
+sudo apt install -y apache2 php libapache2-mod-php php-mysql php-curl php-gd php-mbstring php-xml php-zip
 
-# Create database and user
-mysql -u root -p << EOF
-CREATE DATABASE nextcloud;
-CREATE USER 'nextclouduser'@'localhost' IDENTIFIED BY 'strong_password';
-GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextclouduser'@'localhost';
-FLUSH PRIVILEGES;
+# Install Nextcloud
+sudo snap install nextcloud
+
+# Configure Apache
+sudo tee /etc/apache2/conf.d/nextcloud.conf <<EOF
+Alias /nextcloud "/var/snap/nextcloud/current/nextcloud"
+
+<Directory /var/snap/nextcloud/current/nextcloud>
+  Options +FollowSymlinks
+  AllowOverride All
+
+  <IfModule mod_dav.c>
+    Dav off
+  </IfModule>
+
+  SetEnv HOME /var/snap/nextcloud/current/nextcloud
+  SetEnv HTTP_HOME /var/snap/nextcloud/current/nextcloud
+
+  Satisfy Any
+
+</Directory>
 EOF
 
-# Download and extract Nextcloud
-wget https://download.nextcloud.com/server/latest/nextcloud.zip
-unzip nextcloud.zip -d /var/www/html/
-chown -R www-data:www-data /var/www/html/nextcloud
-
-# Configure web server (example for Apache)
-a2enmod rewrite
-a2ensite default-ssl
-sed -i 's/DocumentRoot \/\var\/www\/html/DocumentRoot \/\var\/www\/html\/nextcloud/' /etc/apache2/sites-available/default-ssl
+sudo a2enmod rewrite
+sudo a2enmod headers
 sudo service apache2 restart
 
-# Open ports (adjust firewall rules as needed)
-ufw allow 80/tcp
-ufw allow 443/tcp
+# Configure Nextcloud
+sudo nextcloud.occ config:system:set trusted_domains 1 --value=localhost
+sudo nextcloud.occ config:system:set trusted_domains 2 --value=yourdomain.com
+sudo nextcloud.occ config:system:set overwrite.cli.url /nextcloud
+sudo nextcloud.occ config:system:set overwrite.web.root /nextcloud
 
+# Create Nextcloud admin user
+sudo nextcloud.occ user:add --display-name "Admin" --user-name "admin" --password "your_admin_password"
+
+# Enable SSL (optional)
+#sudo nextcloud.occ config:system:set overwrite.cli.url https://localhost/nextcloud
+#sudo nextcloud.occ config:system:set overwrite.web.root https://localhost/nextcloud
+
+# Restart Nextcloud
+sudo snap restart nextcloud
+
+echo "Nextcloud installed and configured. You can access it at http://localhost/nextcloud"
