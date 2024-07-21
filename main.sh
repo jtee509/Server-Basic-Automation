@@ -9,6 +9,7 @@ configs=(
   "nginx"
   "samba"
   "squid_proxy"
+  "test_website"
 )
 
 # Function to print available configurations
