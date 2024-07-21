@@ -2,7 +2,7 @@
 
 # Define available configurations
 configs=(
-  "Postfix"
+  "postfix"
   "apache2"
   "iperf"
   "mariadb"
