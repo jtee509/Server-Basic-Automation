@@ -1,37 +1,19 @@
 #!/bin/bash
 
-# Function to start a website
-start_website() {
-  port="$1"
-  website_dir="$2"
+# Define ports for each page
+PORT1=8080
+PORT2=8081
 
-  # Error handling for invalid port number (outside 1-65535 range)
-  if [[ $port -lt 1 || $port -gt 65535 ]]; then
-    echo "Error: Invalid port number $port. Please choose a port between 1 and 65535."
-    exit 1
-  fi
+# Start simple HTTP servers for each page
+python -m http.server $PORT1 page1.html &
+python -m http.server $PORT2 page2.html &
 
-  # Start the Python server in the background
-  python3 -m http.server "$port" -d "$website_dir" &
-  server_pid=$!
+# Wait for background processes to finish (optional)
+# wait
 
-  # Print server information with clear formatting
-  echo "Website started on port $port (directory: $website_dir)"
-}
+echo "** Servers started!**"
+echo " - Page 1: http://localhost:$PORT1/page1.html"
+echo " - Page 2: http://localhost:$PORT2/page2.html"
 
-# Website directories (replace with your actual paths)
-website1_dir="/Server-Basic-Automation/example1.html"
-website2_dir="/Server-Basic-Automation/example2.html"
-
-# Choose appropriate ports (avoid conflicts with other processes)
-website1_port=8000
-website2_port=8001
-
-# Start websites in the background
-start_website "$website1_port" "$website1_dir"
-start_wrapper "$website2_port" "$website2_dir"
-
-# Keep the script running indefinitely
-while true; do
-  sleep 60  # Optional: Add a sleep here to avoid busy waiting (adjust as needed)
-done
+# Display instructions on how to stop the servers (optional)
+echo "** To stop the servers, press Ctrl+C in this terminal window. **"
