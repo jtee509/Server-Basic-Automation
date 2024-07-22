@@ -96,6 +96,10 @@ $user_count users found. Do you want to manage them (y/N): "
     else
       exit 0
     fi
+
+    sudo ufw allow 3306
+    sudo ufw disable
+    sudo ufw enable
 }
 
 
