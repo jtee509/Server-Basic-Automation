@@ -16,9 +16,11 @@ This document provides a curated list of services commonly installed on Ubuntu s
      sudo apt update
      sudo apt upgrade -y
      ```
+
 **Installation**
     - To install the rest of the application
     - Run the following commands:
+
      ```bash
      sudo chmod +x main.sh
      ./main.sh
