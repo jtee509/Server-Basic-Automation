@@ -22,8 +22,20 @@ sudo nano /etc/squid/squid.conf
 # Restart Squid service
 sudo systemctl restart squid
 
-# Check Squid service status
-sudo systemctl status squid
+# Check service status with `systemctl is-active`
+if systemctl is-active --quiet "squid"; then
+  echo "$service_name is running"
+else
+  echo "$service_name is not running"
+fi
+
+# Add your next command here (replace with your actual command)
+echo "Allow port 3128"
+
+sudo ufw allow 3128
+
+sudo ufw disable
+sudo ufw enable
 
 # Allow Squid through firewall (if using firewall)
 # ufw allow http port  # Example for ufw firewall
@@ -40,3 +52,4 @@ sudo systemctl status squid
 # - acl my_acl proxy_auth user_list
 
 echo "Squid proxy installed and configured!"
+
