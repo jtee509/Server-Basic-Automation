@@ -39,25 +39,26 @@ fi
 valid_selections=()
 for selection in $selections; do
   # Check for range format (e.g., 1-4)
-  if [[ $selection =~ ^[0-9]+-[0-9]+$ ]]; then
-    start_num=${selection%%-*}
-    end_num=${selection##-*}
-    if [[ $start_num -gt 0 && $start_num -le ${#configs[@]} && $end_num -ge $start_num && $end_num -le ${#configs[@]} ]]; then
+  if [[ $selection =~ ^([1-9]|1[0-9]+)-([1-9]|1[0-9]+)$ ]]; then
+    start_num=${BASH_REMATCH[1]} 
+    end_num=${BASH_REMATCH[2]}
+    if [[ $start_num -le $end_num && $end_num -le ${#configs[@]} ]]; then
       for ((i=$start_num; i<=$end_num; i++)); do
         valid_selections+=("${configs[$(($i - 1))]}")
       done
     else
-      echo "Invalid range: $selection. Please use a valid range (e.g., 1-4) within available options."
+      echo "Invalid range: $selection. Please use a valid range (1-${#configs[@]}) within available options."
       exit 1
     fi
   # Check for individual number
-  elif [[ $selection -gt 0 && $selection -le ${#configs[@]} ]]; then
+  elif [[ $selection =~ ^([1-9]|1[0-9]+)$ ]] && ((selection <= ${#configs[@]})); then
     valid_selections+=("${configs[$(($selection - 1))]}")
   else
     echo "Invalid selection: $selection. Please enter valid number(s) separated by spaces, 'all', or a valid range (e.g., 1-4)."
     exit 1
   fi
 done
+
 
 if [[ ${#valid_selections[@]} -eq 0 ]]; then
   exit 1
