@@ -29,8 +29,9 @@ read -r selections
 if [[ "$selections" == "all" ]]; then
   for config in "${configs[@]}"; do
     echo "Installing $config..."
+    sudo chmod +x ${config}_config.sh
     # Replace this line with the actual installation command for each configuration script
-    ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
+    sudo ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
   done
   exit 0
 fi
