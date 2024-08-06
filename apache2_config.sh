@@ -20,8 +20,10 @@ sudo systemctl enable apache2
 echo "Starting Apache2 service..."
 sudo systemctl start apache2
 
-# Check Apache2 status
-echo "Checking Apache2 status..."
-sudo systemctl status apache2
+if systemctl is-active --quiet "apache2"; then
+  echo "apache2 is running"
+else
+  echo "apache2 is not running"
+fi
 
 echo "Apache2 installation complete!"

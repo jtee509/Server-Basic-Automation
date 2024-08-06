@@ -22,7 +22,7 @@ print_configs() {
 print_configs
 
 # Get user input
-echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all):"
+echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all, or a in a range ('1-4')):"
 read -r selections
 
 # Check if user wants to install all
@@ -54,7 +54,7 @@ for selection in $selections; do
   elif [[ $selection =~ ^([1-9]|1[0-9]+)$ ]] && ((selection <= ${#configs[@]})); then
     valid_selections+=("${configs[$(($selection - 1))]}")
   else
-    echo "Invalid selection: $selection. Please enter valid number(s) separated by spaces, 'all'."
+    echo "Invalid selection: $selection. Please enter valid number(s) separated by spaces, 'all', or a in a range ('1-4')."
     exit 1
   fi
 done
