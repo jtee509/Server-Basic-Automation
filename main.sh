@@ -22,7 +22,7 @@ print_configs() {
 print_configs
 
 # Get user input
-echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all, or a range like '1-4'):"
+echo "Select configurations to install (enter number(s) separated by spaces or 'all' for all):"
 read -r selections
 
 # Check if user wants to install all
@@ -54,7 +54,7 @@ for selection in $selections; do
   elif [[ $selection =~ ^([1-9]|1[0-9]+)$ ]] && ((selection <= ${#configs[@]})); then
     valid_selections+=("${configs[$(($selection - 1))]}")
   else
-    echo "Invalid selection: $selection. Please enter valid number(s) separated by spaces, 'all', or a valid range (e.g., 1-4)."
+    echo "Invalid selection: $selection. Please enter valid number(s) separated by spaces, 'all'."
     exit 1
   fi
 done
@@ -69,7 +69,7 @@ for config in "${valid_selections[@]}"; do
   echo "Installing $config..."
   # Replace this line with the actual installation command for each configuration script
   sudo chmod +x ${config}_config.sh
-  ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
+  sudo ./${config}_config.sh  # Assuming installation scripts are named *_install.sh
 done
 
 echo "Installation complete!"
